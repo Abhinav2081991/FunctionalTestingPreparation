@@ -1,0 +1,229 @@
+Git Mistakes Only Senior Engineers Make (Real World)
+1️⃣ Over-optimizing Git History (and Breaking People)
+The Mistake
+
+Aggressively rebasing shared branches
+
+Force-pushing “beautiful” history
+
+Why Seniors Do This
+
+Strong engineering standards
+
+Desire for clean logs
+
+Damage
+
+Teammates lose commits
+
+CI breaks
+
+Trust erosion
+
+Senior Fix
+
+“History cleanliness is secondary to team safety.”
+
+✔ Rebase only private branches
+✔ Merge shared branches
+
+2️⃣ Assuming Everyone Understands Git Like You Do
+The Mistake
+
+Advanced workflows without documentation
+
+Expecting juniors to “just know”
+
+Damage
+
+Mistakes propagate
+
+Fear of Git
+
+Silent errors
+
+Senior Fix
+
+✔ Write Git playbooks
+✔ Add safe defaults
+✔ Protect branches
+
+3️⃣ Force-Pushing Under Pressure
+The Mistake
+git push --force
+
+Why
+
+Release pressure
+
+CI failure panic
+
+Damage
+
+Lost commits
+
+Broken release trails
+
+Senior Fix
+
+✔ Use --force-with-lease
+✔ Communicate before pushing
+
+4️⃣ Rebasing Too Late
+The Mistake
+
+Letting a branch drift for weeks
+
+Rebasing hundreds of commits at once
+
+Damage
+
+Massive conflicts
+
+Increased risk of error
+
+Senior Fix
+
+✔ Rebase/merge daily
+✔ Short-lived branches
+
+5️⃣ Cherry-Picking Without Understanding Dependencies
+The Mistake
+git cherry-pick <commit>
+
+
+…but commit depended on earlier changes
+
+Damage
+
+Tests fail mysteriously
+
+Partial logic
+
+Senior Fix
+
+✔ Inspect commit history
+✔ Prefer PR-based fixes
+
+6️⃣ Treating Git as “Just a Tool”
+The Mistake
+
+Ignoring Git’s role in:
+
+Audits
+
+Compliance
+
+RCA
+
+Damage
+
+No traceability
+
+Weak postmortems
+
+Senior Fix
+
+✔ Enforce commit message standards
+✔ Link Jira → PR → commit
+
+7️⃣ Cleaning History Instead of Fixing Root Cause
+The Mistake
+
+Squashing flaky commits
+
+Deleting “ugly” test failures
+
+Damage
+
+Flakiness persists
+
+Same bugs reappear
+
+Senior Fix
+
+“History tells a story — don’t erase it.”
+
+✔ Fix test stability
+✔ Preserve evidence
+
+8️⃣ Overusing Git Aliases (Team Confusion)
+The Mistake
+alias gco='git checkout'
+
+Damage
+
+Pair programming confusion
+
+Onboarding friction
+
+Senior Fix
+
+✔ Document aliases
+✔ Keep commands explicit in docs
+
+9️⃣ Allowing “Temporary” Git Exceptions
+The Mistake
+
+“Just this once, force-push”
+
+“Skip PR for hotfix”
+
+Damage
+
+Becomes the norm
+
+Process erosion
+
+Senior Fix
+
+✔ Emergency path documented
+✔ Post-incident correction
+
+🔟 Not Using Git as a Leadership Tool
+The Mistake
+
+Git seen only as version control
+
+No governance
+
+Missed Opportunity
+
+Quality gates
+
+Accountability
+
+Learning
+
+Senior Fix
+
+✔ Branch protection
+✔ Required reviews
+✔ CI enforcement
+
+🧠 Meta-Mistake: Thinking Git Mastery Is About Commands
+Reality
+
+At senior level:
+
+Git = risk management
+
+Git = collaboration
+
+Git = traceability
+
+🎯 How to Talk About These in Interviews
+
+Use this structure:
+
+“I’ve made this mistake earlier in my career, here’s the impact, and here’s how I prevent it today.”
+
+Interviewers LOVE:
+✔ Self-awareness
+✔ Growth
+✔ Prevention mindset
+
+🏁 Final Senior Takeaway
+
+If you’ve never made these mistakes…
+you probably haven’t worked at scale 😉

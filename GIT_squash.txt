@@ -1,0 +1,106 @@
+Git Squash — What, Why, When (Senior-Level Explanation)
+🧠 What is Git Squash?
+
+Git squash means combining multiple commits into a single commit.
+
+The final code stays the same — only commit history changes.
+
+🔧 What Does Squash Do Internally?
+
+Takes multiple commits
+
+Rewrites them as one new commit
+
+Generates a new commit hash
+
+Removes intermediate commit messages (unless you keep them)
+
+📌 History is rewritten
+
+🪜 How Squash is Done (Most Common Way)
+Using Interactive Rebase
+git rebase -i origin/main
+
+
+Change:
+
+pick a1 Add API tests
+pick b2 Fix assertion
+pick c3 Remove debug log
+
+
+To:
+
+pick a1 Add API tests
+squash b2 Fix assertion
+squash c3 Remove debug log
+
+📘 Resulting History
+Before Squash
+A --- B --- C
+
+After Squash
+A'
+
+
+📌 Single meaningful commit
+
+🎯 When Should Git Squash Be Used?
+✅ Use Squash When
+
+✔ Feature development created multiple WIP commits
+✔ Fixing mistakes incrementally
+✔ Cleaning history before PR
+✔ PR has “noise” commits
+✔ Small logical unit of work
+
+❌ When Squash Should NOT Be Used
+
+❌ On shared branches
+❌ After commits are reviewed & approved
+❌ For logically independent changes
+❌ In audit-heavy environments (finance, healthcare)
+
+🔥 Real QA Automation Example
+During Development
+Add login API test
+Fix status code assertion
+Fix JSON schema
+Remove println
+
+After Squash
+Add login API validation with schema checks
+
+
+✔ Reviewer focuses on what, not how many fixes
+
+🧠 Squash vs Merge vs Rebase (Quick Context)
+Action	Purpose
+Squash	Clean commit history
+Rebase	Reapply commits on new base
+Merge	Combine branches
+
+📌 Squash is often part of interactive rebase
+
+⚠️ Risks of Squash
+
+Loses step-by-step evolution
+
+Harder to bisect issues later
+
+Can hide flaky test history
+
+💡 Seniors decide intentionally, not by habit
+
+🎯 Interview-Perfect Answer (30 sec)
+
+“Git squash combines multiple commits into one to keep history clean. I typically use it on my private feature branch before creating a PR to remove WIP and fix-up commits. I avoid squashing shared or already reviewed commits because it rewrites history.”
+
+🧠 One-Line Memory Hook
+
+Squash removes noise, not knowledge.
+
+🏁 Senior Takeaway
+
+Git squash is not about aesthetics —
+it’s about respecting the reviewer’s time.

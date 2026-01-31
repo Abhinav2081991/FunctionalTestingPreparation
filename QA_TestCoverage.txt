@@ -1,0 +1,147 @@
+What is Test Coverage?
+📌 Definition
+
+Test Coverage measures how much of the application is exercised by tests.
+
+In simple words:
+
+“What part of the system is tested vs what exists?”
+
+⚠️ Important:
+Coverage ≠ Quality
+Coverage only tells you reach, not depth.
+
+🧠 Types of Test Coverage (Very Important)
+
+Test coverage is not one thing. There are multiple dimensions.
+
+1️⃣ Requirements Coverage
+What it measures
+
+% of requirements / user stories tested
+
+Formula
+(Tested requirements ÷ Total requirements) × 100
+
+Example
+
+Total stories: 50
+
+Covered: 45
+➡ 90% requirement coverage
+
+Used by
+
+✔ Product owners
+✔ Auditors
+✔ Leadership
+
+2️⃣ Code Coverage (Most Popular, Most Misused)
+What it measures
+
+% of source code executed by tests
+
+Common types
+Type	Meaning
+Line	Lines executed
+Branch	if/else paths
+Method	Methods called
+Condition	Boolean expressions
+Example
+Line Coverage = 75%
+
+
+⚠️ High code coverage does NOT guarantee correctness
+
+3️⃣ Functional Coverage
+What it measures
+
+Features and business flows tested
+
+Example
+
+Login tested
+
+Forgot password tested
+
+MFA tested
+
+More meaningful than code coverage for QA.
+
+4️⃣ Test Case Coverage
+What it measures
+
+% of test cases executed vs planned
+
+Used heavily in:
+
+Test cycles
+
+UAT
+
+Releases
+
+5️⃣ Risk Coverage (Senior-Level Metric)
+What it measures
+
+Coverage of high-risk areas
+
+Examples:
+
+Payment flows
+
+Security
+
+Compliance
+
+Data migration
+
+This is what leadership actually cares about.
+
+6️⃣ API Coverage
+What it measures
+
+Endpoints tested vs total endpoints
+
+Example:
+
+80 out of 100 endpoints tested
+➡ 80% API coverage
+
+7️⃣ UI Coverage
+What it measures
+
+Screens / workflows tested via UI
+
+Should be low but strategic (Test Pyramid).
+
+🔁 Test Coverage vs Test Pyramid (Connection)
+Pyramid Layer	Coverage Goal
+Unit	High code coverage
+API	High functional coverage
+UI	High business coverage (low volume)
+🚫 Common Myths (Very Important)
+❌ “We have 90% coverage, so we’re safe”
+
+Wrong.
+
+❌ “More tests = better coverage”
+
+No — redundant tests don’t add coverage.
+
+❌ “Coverage is only a dev metric”
+
+QA owns functional and risk coverage.
+
+🧠 How Senior QA Explain Coverage to Leadership
+
+“Our test coverage focuses on business-critical and high-risk flows, not just raw percentages.”
+
+🎯 Interview-Perfect Summary
+
+“Test coverage measures how much of the system is exercised by tests. It includes requirement, code, functional, and risk coverage. High coverage improves confidence, but coverage alone does not guarantee quality.”
+
+🧠 Senior QA Insight
+
+Coverage tells you what was touched.
+Quality tells you how well it was tested.

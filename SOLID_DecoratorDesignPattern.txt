@@ -1,0 +1,835 @@
+Decorator Design Pattern — Deep Dive for a Senior QA Engineer
+1️⃣ What is the Decorator Design Pattern?
+
+Decorator Pattern allows you to:
+
+Dynamically add new behavior to an object without modifying its existing code
+
+Key idea
+
+Follows Open/Closed Principle (OCP)
+➜ Open for extension, closed for modification
+
+Instead of:
+
+	Creating subclasses for every variation ❌
+	Or stuffing if/else everywhere ❌
+	You wrap the original object with additional behavior.
+
+2️⃣ Structure of Decorator Pattern
+
+		Component (Interface)
+		   ↑
+		ConcreteComponent (Core behavior)
+		   ↑
+		Decorator (Abstract wrapper)
+		   ↑
+		ConcreteDecorators (Extra behaviors)
+
+3️⃣ Simple Real-Life Analogy ☕
+
+Coffee order
+
+Coffee ☕
+
+Milk
+
+Sugar
+
+Whipped Cream
+
+Instead of 10 subclasses:
+
+	CoffeeWithMilk
+	CoffeeWithMilkAndSugar
+	CoffeeWithMilkSugarCream
+
+
+You do:
+
+Coffee coffee = new Milk(new Sugar(new BasicCoffee()));
+
+🧩 Why Decorator is IMPORTANT in Test Automation
+Problems we face daily:
+
+Logging
+
+Retry logic
+
+Screenshots on failure
+
+Performance measurement
+
+Security headers
+
+Authentication
+
+Dynamic request modification
+
+Decorator solves this without breaking existing code.
+
+🧪 Decorator Pattern in Selenium Java (REAL USE CASES)
+🔹 Use Case 1: WebElement Actions with Logging + Retry + Screenshot
+
+		Step 1: Component
+		public interface ElementActions {
+			void click();
+			void type(String text);
+		}
+
+Step 2: Core Implementation
+
+		public class SeleniumElementActions implements ElementActions {
+
+			private final WebElement element;
+
+			public SeleniumElementActions(WebElement element) {
+				this.element = element;
+			}
+
+			public void click() {
+				element.click();
+			}
+
+			public void type(String text) {
+				element.sendKeys(text);
+			}
+		}
+
+Step 3: Base Decorator
+
+		public abstract class ElementActionsDecorator implements ElementActions {
+
+			protected final ElementActions wrapped;
+
+			public ElementActionsDecorator(ElementActions wrapped) {
+				this.wrapped = wrapped;
+			}
+
+			public void click() {
+				wrapped.click();
+			}
+
+			public void type(String text) {
+				wrapped.type(text);
+			}
+		}
+
+Step 4: Concrete Decorators
+✅ Logging Decorator
+	
+	public class LoggingDecorator extends ElementActionsDecorator {
+
+		public LoggingDecorator(ElementActions wrapped) {
+			super(wrapped);
+		}
+
+		@Override
+		public void click() {
+			System.out.println("Clicking element...");
+			super.click();
+		}
+	}
+
+✅ Retry Decorator
+	
+	public class RetryDecorator extends ElementActionsDecorator {
+
+		public RetryDecorator(ElementActions wrapped) {
+			super(wrapped);
+		}
+
+		@Override
+		public void click() {
+			int attempts = 0;
+			while (attempts < 3) {
+				try {
+					super.click();
+					return;
+				} catch (Exception e) {
+					attempts++;
+				}
+			}
+			throw new RuntimeException("Click failed after retries");
+		}
+	}
+
+🔥 Usage in Tests
+
+		ElementActions actions =
+			new RetryDecorator(
+				new LoggingDecorator(
+					new SeleniumElementActions(element)));
+
+		actions.click();
+
+🎯 Benefit
+
+No if/retry/log inside test code
+
+Behavior is composable
+
+CI-friendly, extensible
+
+🌐 Decorator Pattern in REST Assured Java
+🔹 Use Case 2: API Request with Auth + Logging + Headers
+Step 1: Component
+	
+	public interface ApiRequest {
+		Response execute();
+	}
+
+Step 2: Core Request
+
+	public class BaseApiRequest implements ApiRequest {
+
+		public Response execute() {
+			return given()
+					.contentType(ContentType.JSON)
+					.get("/users");
+		}
+	}
+
+Step 3: Base Decorator
+
+		public abstract class ApiRequestDecorator implements ApiRequest {
+
+			protected final ApiRequest wrapped;
+
+			public ApiRequestDecorator(ApiRequest wrapped) {
+				this.wrapped = wrapped;
+			}
+
+			public Response execute() {
+				return wrapped.execute();
+			}
+		}
+
+Step 4: Concrete Decorators
+🔐 Auth Decorator
+
+		public class AuthDecorator extends ApiRequestDecorator {
+
+			public AuthDecorator(ApiRequest wrapped) {
+				super(wrapped);
+			}
+
+			@Override
+			public Response execute() {
+				return given()
+						.auth().oauth2("TOKEN")
+						.when()
+						.spec(RestAssured.requestSpecification)
+						.then()
+						.extract()
+						.response();
+			}
+		}
+
+📜 Logging Decorator
+
+
+		public class LoggingDecorator extends ApiRequestDecorator {
+
+			public LoggingDecorator(ApiRequest wrapped) {
+				super(wrapped);
+			}
+
+			@Override
+			public Response execute() {
+				System.out.println("Executing API Request...");
+				return super.execute();
+			}
+		}
+
+🔥 Usage
+ApiRequest request =
+        new LoggingDecorator(
+            new AuthDecorator(
+                new BaseApiRequest()));
+
+Response response = request.execute();
+
+🚀 Real-Time Enterprise Use Cases
+1️⃣ Selenium Grid Execution
+
+	Decorate driver with: 	Logging 	Video recording 	Performance tracking
+
+2️⃣ CI/CD Pipelines
+
+Add retry + screenshot decorators only in Jenkins
+Local runs stay clean
+
+3️⃣ API Testing
+
+Add security headers only for PROD
+Add mock headers for lower envs
+
+4️⃣ Cross-cutting Concerns (BIG ONE)
+Concern	Decorator?
+Logging	✅
+Retry	✅
+Metrics	✅
+Security	✅
+Monitoring	✅
+
+
+❌ When NOT to Use Decorator
+
+Behavior is static → use Strategy
+Object creation logic → use Factory
+Too many decorators → readability suffers
+
+🎯 Decorator vs Inheritance (Senior Insight)
+
+Inheritance				Decorator
+Compile-time			Runtime
+Rigid					Flexible
+Class explosion			Composable
+
+🧠 Interview-Grade Summary
+
+Decorator pattern allows us to dynamically extend object behavior without modifying existing code. In test automation, it’s ideal for cross-cutting concerns like logging, retries, authentication, and metrics. It keeps frameworks clean, SOLID-compliant, and CI-ready.
+
+
+--------------------------------------------------------------------------------------------------------------
+
+Does your Decorator Design follow ISP?
+✔️ YES — when designed correctly (like yours)
+
+Your core interface:
+
+public interface ClickActionsDecoratorInterface {
+    void click(WebElement element);
+}
+
+Why this follows ISP:
+ISP Rule	Your Design
+Interface is small	✅ Single responsibility (click)
+No unused methods	✅ No type, getText, scroll
+Clients depend only on what they need	✅ Page Objects only call click()
+
+➡️ This is textbook ISP compliance
+
+🔥 Why Decorator naturally aligns with ISP
+
+Decorator forces you to:
+
+Keep interfaces thin
+
+Add behavior via composition, not inheritance
+
+Avoid “fat” utility interfaces
+
+💡 If your interface had been:
+
+interface UIActions {
+    click();
+    type();
+    getText();
+    scroll();
+    waitFor();
+}
+
+
+❌ Decorator would BREAK ISP
+❌ Each decorator would implement methods it doesn’t care about
+
+🧠 How ISP + Decorator work together
+Decorator requires:
+Small Interface + Optional Behavior + Composition
+
+
+Which is exactly what ISP enforces.
+
+⚠️ Where ISP CAN be violated (Common Mistake)
+❌ Bad Design
+interface SeleniumActions {
+    void click(WebElement e);
+    void type(WebElement e, String text);
+    void waitFor();
+    void takeScreenshot();
+}
+
+
+Then:
+
+class ClickRetryDecorator implements SeleniumActions {
+   // forced to implement unused methods
+}
+
+
+➡️ ISP violation
+
+✅ Correct ISP-compliant Decorator Structure
+
+Split by responsibility:
+
+interface ClickAction {
+    void click(WebElement element);
+}
+
+interface TypeAction {
+    void type(WebElement element, String text);
+}
+
+
+Decorators stay clean and focused.
+
+🎯 Bonus: Does it also follow DIP?
+YES (to an extent)
+
+Your decorators depend on:
+
+ClickActionsDecoratorInterface
+
+
+Not on concrete implementations.
+
+That means:
+
+High-level modules depend on abstractions
+Low-level implementations are swappable
+
+➡️ Partial DIP compliance
+
+🧪 Interview-Grade Answer (Perfect)
+
+“Yes, the Decorator-based Selenium action framework follows the Interface Segregation Principle because it uses small, focused interfaces. Each decorator depends only on the behavior it extends, avoiding fat interfaces and unnecessary method implementations.”
+
+
+
+--------------------------------------------------------
+
+
+Decorator vs Strategy vs Proxy (Selenium Java – Real Use Cases)
+🧠 1. One-line intent (interview gold)
+Pattern	Intent (1-liner)
+Decorator	Add behavior dynamically to an action without changing it
+Strategy	Choose one of many algorithms at runtime
+Proxy	Control access to an object (before/after or lazy)
+
+🎯 2. Core difference at a glance
+Aspect					Decorator							Strategy							Proxy
+Purpose					Extend behavior						Replace algorithm					Control access
+Relationship			Wraps same interface				Chooses one implementation			Stands in front of real object
+Behavior				Additive (stackable)				Mutually exclusive					Transparent
+Runtime composition		✅ Yes								❌ No								❌ No
+Typical Selenium use	Retry, logging, wait, screenshot	Browser, wait strategy				Lazy driver, security, logging
+🟦 DECORATOR — Selenium Example
+
+Use Case: Retry + Logging + Wait for click
+Interface
+public interface ClickAction {
+    void click(WebElement element);
+}
+
+Base implementation
+public class BaseClickAction implements ClickAction {
+    public void click(WebElement element) {
+        element.click();
+    }
+}
+
+Decorators
+public class RetryClickDecorator implements ClickAction {
+    private final ClickAction action;
+
+    public RetryClickDecorator(ClickAction action) {
+        this.action = action;
+    }
+
+    public void click(WebElement element) {
+        int attempts = 3;
+        while (attempts-- > 0) {
+            try {
+                action.click(element);
+                return;
+            } catch (Exception e) { }
+        }
+    }
+}
+
+public class LoggingClickDecorator implements ClickAction {
+    private final ClickAction action;
+
+    public LoggingClickDecorator(ClickAction action) {
+        this.action = action;
+    }
+
+    public void click(WebElement element) {
+        System.out.println("Clicking element");
+        action.click(element);
+    }
+}
+
+Usage
+ClickAction click =
+    new RetryClickDecorator(
+        new LoggingClickDecorator(
+            new BaseClickAction()));
+
+click.click(button);
+
+✅ Why Decorator?
+
+Stack behaviors
+
+No Page Object pollution
+
+SOLID compliant
+
+🟨 STRATEGY — Selenium Example
+Use Case: Browser selection (Chrome / Firefox / Grid)
+Interface
+public interface DriverStrategy {
+    WebDriver createDriver();
+}
+
+Implementations
+public class ChromeStrategy implements DriverStrategy {
+    public WebDriver createDriver() {
+        return new ChromeDriver();
+    }
+}
+
+public class GridStrategy implements DriverStrategy {
+    public WebDriver createDriver() {
+        return new RemoteWebDriver(GRID_URL, options);
+    }
+}
+
+Context
+public class DriverContext {
+    private final DriverStrategy strategy;
+
+    public DriverContext(DriverStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public WebDriver getDriver() {
+        return strategy.createDriver();
+    }
+}
+
+Usage
+DriverStrategy strategy =
+    isGrid ? new GridStrategy() : new ChromeStrategy();
+
+WebDriver driver = new DriverContext(strategy).getDriver();
+
+✅ Why Strategy?
+
+One algorithm at a time
+
+Clean runtime selection
+
+Perfect for environment-based logic
+
+🟥 PROXY — Selenium Example
+Use Case: Lazy WebDriver Initialization
+Interface
+public interface DriverProvider {
+    WebDriver getDriver();
+}
+
+Real object
+public class RealDriverProvider implements DriverProvider {
+    public WebDriver getDriver() {
+        return new ChromeDriver();
+    }
+}
+
+Proxy
+public class DriverProxy implements DriverProvider {
+    private WebDriver driver;
+
+    public WebDriver getDriver() {
+        if (driver == null) {
+            driver = new ChromeDriver();
+        }
+        return driver;
+    }
+}
+
+Usage
+DriverProvider driver = new DriverProxy();
+driver.getDriver().get("https://google.com");
+
+✅ Why Proxy?
+
+Lazy loading
+
+Access control
+
+Resource optimization
+
+🔥 Real-World Selenium Mapping
+Scenario	Pattern
+Retry, wait, screenshot, logging	Decorator
+Browser selection, wait type	Strategy
+Lazy driver, security wrapper	Proxy
+Grid vs local	Strategy
+CI stability enhancements	Decorator
+⚠️ Common Confusion (Important)
+
+❌ Using Strategy to add retry + logging
+❌ Using Decorator to choose browser
+❌ Using Proxy for algorithm selection
+
+🎯 Decision Cheat Sheet
+Need to ADD behavior dynamically? → Decorator
+Need to CHOOSE behavior? → Strategy
+Need to CONTROL access? → Proxy
+
+🧠 Interview Killer Answer
+
+“Strategy selects one behavior, Decorator enhances behavior, and Proxy controls access. In Selenium, Strategy is used for driver selection, Decorator for flaky-test stabilization, and Proxy for lazy driver initialization or security control.”
+
+
+
+-----------------------------------------------------------------------------------------Decorator Pattern – Advanced Real-World Examples (Non Click/Type)
+1️⃣ Screenshot-on-Failure Decorator (Test Action Level)
+🔴 Problem
+
+You want screenshots:
+
+Only on failure
+
+Without polluting test code
+
+Without duplicating logic everywhere
+
+✅ Why Decorator
+
+Screenshot is cross-cutting behavior → perfect decorator candidate.
+
+Abstraction
+public interface TestStep {
+    void execute();
+}
+
+Core behavior
+public class LoginStep implements TestStep {
+    public void execute() {
+        System.out.println("Executing login step");
+        // Selenium steps here
+    }
+}
+
+Decorator
+public class ScreenshotOnFailureDecorator implements TestStep {
+
+    private final TestStep step;
+
+    public ScreenshotOnFailureDecorator(TestStep step) {
+        this.step = step;
+    }
+
+    public void execute() {
+        try {
+            step.execute();
+        } catch (Exception e) {
+            ScreenshotUtil.capture();
+            throw e;
+        }
+    }
+}
+
+Usage
+TestStep step =
+    new ScreenshotOnFailureDecorator(new LoginStep());
+
+step.execute();
+
+🔥 Real usage
+
+CI pipelines
+
+Failed step evidence
+
+Zero test pollution
+
+2️⃣ API Request Logging Decorator (Rest Assured)
+🔴 Problem
+
+You want to log:
+
+Request + response
+
+Only in DEBUG mode
+
+Without changing test code
+
+Abstraction
+public interface ApiCall {
+    Response execute();
+}
+
+Core implementation
+public class CreateUserApi implements ApiCall {
+    public Response execute() {
+        return given()
+                .contentType(JSON)
+                .body(payload)
+                .post("/users");
+    }
+}
+
+Logging Decorator
+public class ApiLoggingDecorator implements ApiCall {
+
+    private final ApiCall api;
+
+    public ApiLoggingDecorator(ApiCall api) {
+        this.api = api;
+    }
+
+    public Response execute() {
+        System.out.println("Request sent");
+        Response response = api.execute();
+        System.out.println(response.asString());
+        return response;
+    }
+}
+
+Usage
+ApiCall api =
+    new ApiLoggingDecorator(new CreateUserApi());
+
+api.execute();
+
+3️⃣ Wait-for-Condition Decorator (Non Element Action)
+🔴 Problem
+
+You want to:
+
+Wait for page readiness
+
+Before executing business logic
+
+Without hard-coding waits
+
+Abstraction
+public interface PageAction {
+    void perform();
+}
+
+Core logic
+public class LoadDashboardAction implements PageAction {
+    public void perform() {
+        System.out.println("Dashboard loaded");
+    }
+}
+
+Decorator
+public class PageReadyWaitDecorator implements PageAction {
+
+    private final PageAction action;
+
+    public PageReadyWaitDecorator(PageAction action) {
+        this.action = action;
+    }
+
+    public void perform() {
+        Wait.untilPageLoaded();
+        action.perform();
+    }
+}
+
+4️⃣ Retry Decorator for API Calls
+🔴 Problem
+
+APIs are flaky
+
+5xx errors intermittent
+
+Retrying should not affect business logic
+
+Decorator
+public class RetryApiDecorator implements ApiCall {
+
+    private final ApiCall api;
+
+    public RetryApiDecorator(ApiCall api) {
+        this.api = api;
+    }
+
+    public Response execute() {
+        int retries = 3;
+        while (retries-- > 0) {
+            try {
+                return api.execute();
+            } catch (Exception e) {
+                if (retries == 0) throw e;
+            }
+        }
+        return null;
+    }
+}
+
+5️⃣ Security / Masking Decorator (Sensitive Data)
+🔴 Problem
+
+Logs contain passwords / tokens
+
+Need masking without modifying tests
+
+Decorator
+public class SecureLoggingDecorator implements ApiCall {
+
+    private final ApiCall api;
+
+    public SecureLoggingDecorator(ApiCall api) {
+        this.api = api;
+    }
+
+    public Response execute() {
+        Response response = api.execute();
+        MaskUtil.maskSensitiveFields(response);
+        return response;
+    }
+}
+
+6️⃣ Performance Timing Decorator
+🔴 Problem
+
+You want to:
+
+Measure execution time
+
+Without affecting logic
+
+Across UI and API
+
+Decorator
+public class TimingDecorator implements TestStep {
+
+    private final TestStep step;
+
+    public TimingDecorator(TestStep step) {
+        this.step = step;
+    }
+
+    public void execute() {
+        long start = System.currentTimeMillis();
+        step.execute();
+        System.out.println("Time: " + (System.currentTimeMillis() - start));
+    }
+}
+
+🎯 When NOT to Use Decorator
+
+❌ For object creation → Factory
+❌ For choosing ONE behavior → Strategy
+❌ For access control → Proxy
+
+🧠 Senior-Level Insight
+
+Decorator is ideal for cross-cutting concerns that grow over time
+Retry, wait, logging, screenshot, security, performance — these evolve continuously.
+
+🔥 Interview-Perfect Line
+
+“We use Decorator to layer non-functional concerns like retry, logging, screenshot, and performance measurement without modifying business logic or page objects.”
+

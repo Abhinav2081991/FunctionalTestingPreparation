@@ -1,0 +1,128 @@
+Defect Leakage vs Defect Density (Explained Clearly)
+1️⃣ What is Defect Leakage?
+📌 Definition
+
+Defect Leakage is the percentage of defects that escape to a later testing phase or production, even though they should ideally have been caught earlier.
+
+👉 In simple terms:
+
+“How many bugs slipped through?”
+
+🔁 Example (Very Practical)
+Phase	Defects Found
+System Testing	90
+UAT	15
+Production	5
+
+Defects leaked = 15 + 5 = 20
+
+🧮 Formula
+Defect Leakage (%) =
+(Defects found in later phase ÷ Total defects) × 100
+
+
+Using example:
+
+(20 ÷ 110) × 100 = 18.18%
+
+🎯 Why Defect Leakage Matters
+High Leakage Indicates	Meaning
+Weak test coverage	Missed scenarios
+Poor requirement understanding	Gaps
+Late testing	Shift-right
+Inadequate reviews	No shift-left
+🔥 Real Production Leakage Example
+
+Login works in test
+
+Fails with real SSO token in prod
+➡ Environment parity issue
+
+🧠 How Leaders Use Leakage
+
+✔ Assess QA effectiveness
+✔ Identify risky releases
+✔ Justify investment in automation
+✔ Improve early testing
+
+2️⃣ What is Defect Density?
+📌 Definition
+
+Defect Density measures the number of defects relative to the size of the software.
+
+👉 In simple terms:
+
+“How buggy is this component?”
+
+🧮 Formula
+Defect Density =
+Number of defects ÷ Size of software
+
+Size can be:
+
+KLOC (thousand lines of code)
+
+Function Points
+
+Story Points (Agile adaptation)
+
+Modules / Features
+
+🧪 Example
+
+Defects found: 40
+
+Code size: 10 KLOC
+
+Defect Density = 4 defects per KLOC
+
+🧠 Agile Example (Common Today)
+
+Defects: 12
+
+Story Points: 60
+
+Defect Density = 0.2 defects per story point
+
+🎯 Why Defect Density Matters
+High Density Means	Implication
+Complex code	Needs refactoring
+Poor design	Technical debt
+Rushed delivery	Quality risk
+New team	Learning curve
+🔁 Defect Leakage vs Defect Density (Side-by-Side)
+Aspect	Defect Leakage	Defect Density
+Measures	Escaped defects	Defects per size
+Focus	Test effectiveness	Product quality
+Used by	QA Leads, Managers	Architects, Leads
+Phase-based	Yes	No
+Predictive	Medium	High
+🧠 How Senior QA Use Both Together
+Example Insight:
+
+“Module A has low defect density but high leakage.”
+
+Meaning:
+
+Code quality is good
+
+Tests are missing real-world scenarios
+
+Another:
+
+“High defect density but low leakage”
+
+Meaning:
+
+Many bugs, but QA is catching them early
+
+Needs dev quality improvement
+
+🎯 Interview-Perfect Summary
+
+“Defect leakage measures how many defects escape to later phases, reflecting test effectiveness, while defect density measures defects relative to software size, reflecting overall product quality.”
+
+🧠 Senior QA Insight
+
+Leakage tells you where QA failed.
+Density tells you where the product is weak.

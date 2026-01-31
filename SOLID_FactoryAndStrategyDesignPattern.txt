@@ -1,0 +1,113 @@
+difference between Factory Design Pattern and Strategy Design Pattern
+
+Perfect — this is another senior-level design patterns question, often asked in interviews to test whether you can differentiate object creation vs object behavior selection. Let’s break it down clearly, with examples in Selenium/Java.
+
+🧠 Core Concept
+Feature	Factory Design Pattern	Strategy Design Pattern
+Purpose	Encapsulate object creation logic; decide which concrete object to instantiate	Encapsulate algorithm or behavior; decide which behavior to execute at runtime
+Type of Pattern	Creational	Behavioral
+Focus	What object to create	How to perform an operation (behavior)
+Number of Objects	Returns a new instance	Uses existing object, can change its behavior dynamically
+Open/Closed Principle	Yes — add new types without changing factory	Yes — add new strategies without changing client code
+Runtime Flexibility	Moderate — object type decided once at creation	High — can swap strategies dynamically at runtime
+Dependency	Client depends on factory to get object	Client depends on strategy interface to execute behavior
+Example in Automation	Choosing ChromeDriver, EdgeDriver, or GridDriver	Choosing different wait strategies: ExplicitWait, FluentWait, RetryClick
+🔹 Real-World Analogy
+
+Factory: Coffee machine → makes Espresso, Latte, Cappuccino (object creation)
+
+Strategy: Payment method → use CreditCard, PayPal, UPI (behavior of the same operation)
+
+🏗️ Examples in Test Automation
+1️⃣ Factory Pattern Example (Driver Creation)
+
+Scenario: Decide which WebDriver to use based on configuration.
+
+// Strategy interface not needed here
+public interface DriverStrategy {
+    WebDriver createDriver();
+}
+
+public class ChromeDriverStrategy implements DriverStrategy {
+    public WebDriver createDriver() { return new ChromeDriver(); }
+}
+
+public class EdgeDriverStrategy implements DriverStrategy {
+    public WebDriver createDriver() { return new EdgeDriver(); }
+}
+
+// Factory
+public class DriverFactory {
+    public static DriverStrategy getDriver(String browser){
+        return switch(browser){
+            case "Chrome" -> new ChromeDriverStrategy();
+            case "Edge" -> new EdgeDriverStrategy();
+            default -> throw new IllegalArgumentException("Unknown browser");
+        };
+    }
+}
+
+// Usage
+WebDriver driver = DriverFactory.getDriver("Chrome").createDriver();
+
+
+✅ Purpose: Create the correct WebDriver object without modifying test code.
+
+2️⃣ Strategy Pattern Example (Dynamic Behavior)
+
+Scenario: Click an element using different strategies (normal, retry, JavaScript)
+
+// Strategy interface
+public interface ClickStrategy {
+    void click(WebElement element);
+}
+
+// Concrete strategies
+public class NormalClick implements ClickStrategy {
+    public void click(WebElement element) { element.click(); }
+}
+
+public class RetryClick implements ClickStrategy {
+    public void click(WebElement element) {
+        for(int i=0;i<3;i++){
+            try { element.click(); return; } catch(Exception ignored) {}
+        }
+        throw new RuntimeException("Click failed");
+    }
+}
+
+// Client
+public class Button {
+    private ClickStrategy clickStrategy;
+
+    public Button(ClickStrategy clickStrategy) {
+        this.clickStrategy = clickStrategy;
+    }
+
+    public void click(WebElement element) {
+        clickStrategy.click(element);
+    }
+}
+
+// Usage
+Button btn = new Button(new RetryClick());
+btn.click(driver.findElement(By.id("login")));
+
+
+✅ Purpose: Select the algorithm/behavior dynamically, same object, different strategy.
+
+🔹 Key Differences Summarized
+Aspect	Factory	Strategy
+Goal	Decide what object to create	Decide how an object behaves
+Pattern Type	Creational	Behavioral
+Runtime Flexibility	Limited (object created once)	High (behavior can change anytime)
+Example in Automation	ChromeDriver vs EdgeDriver	RetryClick vs NormalClick
+Relationship	Returns new object	Uses existing object
+🎯 Interview-Ready Answer (30 sec)
+
+“Factory pattern focuses on creating the right object without exposing instantiation logic, e.g., returning ChromeDriver, EdgeDriver, or GridDriver. Strategy pattern focuses on choosing an algorithm or behavior at runtime, e.g., clicking an element normally, retrying on failure, or using JavaScript. Factory is about what, Strategy is about how.”
+
+🧠 Memory Hook
+
+Factory = What to create → choose object
+Strategy = How to behave → choose behavior

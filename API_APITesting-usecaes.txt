@@ -1,0 +1,244 @@
+Below is a complete, practical checklist of test cases to ensure a REST API is working properly, written from a Rest Assured (Java) automation perspective and aligned with enterprise / interview expectations.
+
+1. Functional Test Cases (Core API Behavior)
+
+Verify correct HTTP status codes (200, 201, 400, 401, 403, 404, 500)
+Validate request method behavior (GET/POST/PUT/PATCH/DELETE)
+Verify mandatory vs optional fields
+			JSON - {   "firstName": "Rahul",   "lastName": "Sharma",   "email": "rahul.sharma@test.com",   "phone": "9999999999",   "age": 30 }
+		All Mandatory Fields - 
+			given().contentType(ContentType.JSON).body(payloadWithAllFields).when().post("/api/customers").then().statusCode(201).body("id", notNullValue());
+		Only Mandatory Fields - 
+			given().contentType(ContentType.JSON).body(payloadWithMandatoryOnly) .when().post("/api/customers") .then().statusCode(201).body("id", notNullValue()).body("phone", nullValue());
+		Without Mandatory Fields - 400 Bad request 
+			given().contentType(ContentType.JSON).body(payloadMissingEmail) .when().post("/api/customers") .then().statusCode(400).body("error", equalTo("EMAIL_REQUIRED"));
+		Mandatory field present but value is null - {   "firstName": "",   "lastName": "Sharma",   "email": "rahul.sharma@test.com" }	
+			.then().statusCode(400).body("error", equalTo("FIRST_NAME_EMPTY"));
+
+
+Validate request payload structure
+Validate response payload correctness
+Verify CRUD operations end-to-end   -- tried for RulesetUI.
+
+		Operation			HTTP Method			Purpose
+		Create				POST				Create resource
+		Read				GET					Fetch resource
+		Update				PUT / PATCH			Modify resource
+		Delete				DELETE				Remove resource
+		
+
+		Negative CRUD Scenarios
+		Scenario	            		Expected
+		GET after DELETE	    		404
+		UPDATE invalid ID	    		404
+		DELETE twice	        		404 / 204
+		CREATE duplicate email			409
+		
+		Unauthorized → 401
+		Bad Request -->  400
+		Forbidden role → 403
+		
+	“To verify CRUD operations end-to-end, I create a resource using POST, validate persistence via GET, modify it using PUT/PATCH, and finally delete it using DELETE while validating schema, data integrity, and system behavior at each step.”		
+
+
+Validate business rules and calculations
+Verify idempotency of PUT/DELETE  -- it will give the same result if tried multiple times.
+
+		Common Interview Follow-ups
+Question						Expected Answer
+Is POST idempotent?				❌ No
+Can DELETE return 404?			✅ Yes
+How to test idempotency?		Repeat same request + verify state
+Why idempotency matters?		Prevents duplicate updates in retries
+
+Validate default values in response -- 
+
+2. Positive & Negative Test Cases
+Positive
+
+Valid headers, auth, and payload
+Valid path and query parameters
+Boundary values within limits
+Negative
+Missing required fields
+Invalid data types
+Invalid enum values
+Invalid endpoint
+Unsupported HTTP method
+Empty request body
+Duplicate requests
+
+3. Authentication & Authorization Test Cases
+
+Valid token → success response
+Missing token → 401 Unauthorized
+Invalid/expired token → 401
+Insufficient role/permission → 403 Forbidden
+Token refresh / re-login scenarios
+
+
+	Authentication  
+	Basic Authentication
+		🔹 What it is
+			Username + password encoded in Base64
+			Simple but not secure without HTTPS
+		When to use
+			Internal tools
+			Legacy applications
+			Quick POCs / non-production systems
+			
+			given().auth().basic("admin", "admin123")
+			
+			Preemptive Basic Authentication
+		🔹 Why preemptive?
+				Sends credentials without waiting for 401 challenge
+				Faster, avoids extra round trip
+
+		🔹 When to use
+			Performance-sensitive APIs
+			Known secured endpoints
+			
+			given().auth().preemptive().basic("admin", "admin123")
+			
+			
+			Bearer Token Authentication (OAuth 2.0 / JWT)
+			🔹 What it is
+
+				Token passed in Authorization header
+				Most common in modern microservices
+
+			🔹 When to use
+
+				REST APIs
+				Microservices
+				Cloud / SaaS apps
+				Mobile + Web backends
+
+			🔹 Real-time example
+				Customer APIs protected by OAuth2 / JWT
+				
+				given().header("Authorization", "Bearer " + token)
+				
+				
+				OAuth 2.0 (Client Credentials Grant)
+				🔹 When to use
+				Service-to-service communication
+				Backend-only systems (no UI)
+
+				🔹 Real-time example
+				Billing service calling Order service
+				
+				Response tokenResponse =given().contentType(ContentType.URLENC).formParam("grant_type", "client_credentials").formParam("client_id", "client123")
+					.formParam("client_secret", "secret123").when().post("/oauth/token");
+				String accessToken = tokenResponse.path("access_token");
+				given().auth().oauth2(accessToken) .when().get("/orders") .then().statusCode(200);
+				
+				
+				
+			Session-Based Authentication (Cookies)
+		🔹 When to use
+		Traditional web apps
+		Stateful backend systems
+
+		🔹 Real-time example
+		Login → session cookie → subsequent calls
+
+		✅ Code
+		Response loginResponse =
+			given().contentType(ContentType.JSON).body("{\"username\":\"user\",\"password\":\"pass\"}").when().post("/login");
+		String sessionId = loginResponse.getCookie("JSESSIONID");
+
+		given().cookie("JSESSIONID", sessionId)
+		.when().get("/dashboard")
+		.then().statusCode(200);
+			
+
+4. Header Validation Test Cases
+
+		Verify required headers (Content-Type, Accept)
+		Invalid or missing headers
+		Case sensitivity of headers
+		Unsupported media types (415)
+
+5. Response Validation Test Cases
+
+		Validate response JSON schema
+		Validate response data types
+		Validate field presence/absence
+		Validate null vs empty values
+		Validate response ordering (if applicable)
+		Validate response size
+
+6. Error Handling & Message Validation
+
+		Validate meaningful error messages
+		Validate error codes and error structure
+		Validate consistency of error responses
+		Verify no sensitive data is exposed in errors
+
+7. Boundary & Edge Case Test Cases
+
+		Max/min values for numeric fields
+		Max length for strings
+		Empty arrays and objects
+		Large payload handling
+		Special characters and Unicode input
+
+8. Security Test Cases (API-Level)
+
+		SQL/NoSQL injection attempts
+		Script injection in inputs
+		Broken Object Level Authorization (BOLA)
+		Rate limiting / throttling
+		HTTPS enforcement
+		Sensitive data masking (PII)
+
+9. Performance & Reliability Test Cases
+
+		Response time within SLA
+		Concurrent requests handling
+		Load and stress scenarios
+		Timeout handling
+		Retry behavior on transient failures
+
+10. Data Integrity & Database Validation
+
+		Verify data persistence after POST/PUT
+		Verify rollback on failure
+		Verify no duplicate records
+		Verify DB state matches API response
+
+11. Versioning & Compatibility Test Cases
+
+		Validate API versioning (v1, v2)
+		Backward compatibility
+		Deprecated field behavior
+
+12. Idempotency & Concurrency
+
+		Duplicate PUT/DELETE requests produce same result
+		Concurrent updates handled correctly
+		Conflict handling (409)
+
+13. Logging & Audit Test Cases
+
+		Verify request/response logging
+		Verify audit trail entries (if applicable)
+		Validate correlation IDs
+
+14. Sample Rest Assured Test (Reference)
+given()
+    .baseUri(BASE_URL)
+    .header("Authorization", "Bearer " + token)
+    .contentType(ContentType.JSON)
+    .body(payload)
+.when()
+    .post("/customers")
+.then()
+    .statusCode(201)
+    .body("id", notNullValue())
+    .body("status", equalTo("ACTIVE"));
+
+Interview-Ready Summary (One-Liner)
+
+“To ensure an API works properly, we validate functionality, negative scenarios, security, performance, data integrity, and error handling using Rest Assured with schema and business validations.”

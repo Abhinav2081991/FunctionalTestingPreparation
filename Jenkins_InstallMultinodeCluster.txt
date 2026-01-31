@@ -1,0 +1,47 @@
+Jenkins - 
+
+Manage jenkins -  Nodes -  Add an Agent Node - 
+
+Give below Details - 
+
+a. Agent Name - 
+b. Number of Executors - The maximum number of concurrent builds that Jenkins may perform on this node.
+
+c. Remote root directory  - An agent needs to have a directory dedicated to Jenkins. Specify the path to this directory on the agent. It is best to use an absolute path, such as /var/jenkins or c:\jenkins . This should be a path local to the agent machine. There is no need for this path to be visible from the controller.
+
+d. Labels - for ex - AGENT
+
+e. Usage - Select - Use this node as much as possible.
+
+f. Launch method - Select default value.
+
+g. Availability - Keep this agent online as much as possible.
+
+h. GIve environment variables if required. 
+
+Click on Save.
+
+
+Now There are ceriain commands that can be executed - 
+
+Run from agent command line: (Unix) 
+curl -sO http://localhost:8080/jnlpJars/agent.jar    -- This is to get the agent.jar
+
+java -jar agent.jar -url http://localhost:8080/ -secret 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+
+Run from agent command line: (Windows) 
+curl.exe -sO http://localhost:8080/jnlpJars/agent.jar
+java -jar agent.jar -url http://localhost:8080/ -secret 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+
+
+Or run from agent command line, with the secret stored in a file: (Unix) 
+echo 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa > secret-file
+curl -sO http://localhost:8080/jnlpJars/agent.jar
+java -jar agent.jar -url http://localhost:8080/ -secret @secret-file -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+ 
+
+
+
+
+Then Agent Node is up and running, alidate from UI now it can be used on pipelines.
+

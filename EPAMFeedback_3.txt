@@ -1,0 +1,192 @@
+
+SKILL FROM: Coding session (AWTP AQA Java)
+Coding Tasks (for AQA Java)
+Candidate solved Java coding tasks involving collections, streams, comparator, and Selenium/XPath. 
+Some syntax issues and hesitation were evident, but overall demonstrated practical ability to solve coding problems.
+ 
+L1, L2, L3, L4
+OOPs
+Java Core
+Automation using Selenium
+Automation of APIs (REST, XML & SOAP)
+AI-Generated suggestion based on interview transcript
+
+SKILLS FROM: AWTP AQA Java
+Java
+Demonstrated familiarity with Java basics, collections, entrySet, keySet, comparator, and some Java 8 features.
+
+
+L1, L2
+OOP principles
+Java collections: base usage (List, Map) -- Done.
+L3
+Java collections: practical usage of most Collections classes (List, Set, Map)  - Done.
+Stream API methods, lambda expressions  -- Done
+Comparator knowledge  -- DOne
+
+
+
+Design patterns
+Candidate described using Singleton and Factory patterns with thread-local drivers. -- Done.
+Provided basic explanation of Builder, Decorator, and Strategy but lacked hands-on implementation experience beyond library usage or simple POJO/service separation. 
+
+L1, L2
+Purpose of design patterns usage  - Done.
+At least one of most-common design patterns (e.g Decorator, Singleton, Factory) -- Done.
+L3
+At least 3 of most-common design patterns (e.g Decorator, Singleton, Factory)  -- Done.
+
+
+L4
+Main design patterns (GoF, Dependency Injection/IoC)  -- Done.
+
+
+
+Testing Fundamentals
+Showed strong grasp of testing fundamentals: test pyramid,  -- DOne
+ defect leakage/density, -- Done.	
+ test coverage,  - DOne.
+ integration vs. E2E testing, -- Done.
+ and metrics.
+ Provided practical examples of microservices testing, -- Done.\
+ 
+ Learn more:
+ Contract Testing 
+ localization/globalization testing.
+ Accessibility Testing - 
+ Limited exposure to non-functional test types like performance & accessibility. 
+ 
+ 
+ 
+L1, L2
+The definition of Software Testing and Quality  -- Done.
+Testing objectives, Testing principles  -- Done.
+Test planning, Test monitoring and control, Test analysis, Test design, Test implementation, Test execution, Test completion  -- Done.
+L3
+
+Test Levels, Test Types -- Done.
+Non-Functional (Compatibility,  -- Done.
+ Localization/Internalization, 
+ Usability,  -- Done
+ UI, and others) Testing  -- Done.
+L4
+Can make an assessment of existing Testing process relatively to project specifics  -- Done.
+Can setup testing and test automation process  -- Done.
+
+
+
+Test strategy
+Good understanding of test strategy and planning.   -- Done.
+Described involvement from project inception, identifying scope, out-of-scope, tools, criteria, and architecture.  -- Done.
+Explained metrics-driven strategy improvements, defect analysis, and environment considerations, showing methodical and practical approach to test strategy formation and refinement.    -- Done.
+
+
+L1, L2
+Content and purpose
+L3
+Can explain how the testing process is organized on the current project, which test approach is applied and why   --Done.
+Able to define strong and weak areas in Test Strategy using metrics-based approach  -- Done. 
+L4
+Able to drive changes in the existing Test Strategy (for a small system) or its parts (for a complex system) -- Done.
+AI-Generated suggestion based on interview transcript
+Test Plan
+Clearly differentiated test plan from strategy, described detailed resource planning, estimation, and deliverables. Demonstrated experience in preparing and executing test plans tailored to project requirements and stakeholder communication.   --Done.
+L1, L2
+Understanding of what Test Plan is -- Done.
+L3
+Aware of Test Plan on a current project, its content, and purpose -- Done.
+Able to provide recommendations with measurable outputs to existing test plan on Production project(s) as per his/her area of responsibility and testing risks existing on the project(s) -- Done. 
+L4
+Able to build testing process from scratch under supervision (in case project allows) and describe it in Test Plan for small projects -- Done.
+
+Web UI Test Automation Tools in Java -- Done.
+Has good hands-on experience with Selenium and Java. Some recent experience developing framework with Playwright (Java). Implemented remote web driver & aware of different grid setups options. Good at locating elements using xpath and using WebDriver API. -- Done. 
+L1, L2
+Web UI automation tool (Selenium or any similar tool) - Done
+Elements finding and interaction  -- Done
+PageObject & Page Factory pattern  -- Done.
+L4
+Common WD classes and interfaces and their destination  -- Done
+Screenshots  -- Done
+Browser capabilities   - Done.
+AI-Generated suggestion based on interview transcript
+Web Service / API Test Automation
+Demonstrated hands-on experience with Rest Assured, schema validation, payload handling, POJO implementation. Aware of authentication types but struggled to remember RestAssured methods to use for basic auth.  -- Done.
+Provided practical examples of rate limiting,  -- Done. This is while testing gateways.
+ status code validation,
+ and API chaining. -- Done. Can be done using scenarioContext in Cucumber, for test NG - it can be done using ITestContext. (but with TestNG.xml)
+ 
+Some hands-on experience with API Mocking using Wiremock, although not aware of advanced mocking features.   
+
+L1, L2
+Any API test automation tool (HTTP client, etc)  -- Done
+Send HTTP request and receive HTTP response (POST, GET, PUT, DELETE) -- Done
+Use Business Object model to build a request and to parse a response  -- Done.
+L3
+Serialization, Deserialization, JSON, XML -- Done.
+L4
+API Mocking  -- Done.
+AI-Generated suggestion based on interview transcript
+Test Automation Framework Architecture  -- Done.
+Described framework elements such as remote web driver, thread-local drivers, Maven integration, POJO/service separation, and basic design patterns. Lacked detail on advanced architectural decisions or custom framework extensibility.  -- Done.
+L1, L2
+Use Business Object model to build a request and to parse a response  -- Done.
+L3
+
+
+Understanding a decomposition of a TAF by a tests layer, business steps layer, page objects layer, core/utils layer
+Ability to design each layer so that they meet the requirements to the specified level of functional accuracy, maintainability, efficiency, and portability quality characteristics
+
+
+Cross-browser support -- Done.
+Tests parallelization -- DOne.
+
+
+Test Runners -- Done.
+Demonstrated decent hands-on experience with TestNG as the main test runner, including annotation usage, reporting, and integration into CI pipelines.   -- Done,
+L1, L2
+Familiar with at least one Java test runner -- Done.
+Able to connect test runner to the project and write simple tests -- Done.
+Able to use most popular attributes (RW) -- Done.
+Annotations -- Done.
+L3
+Can extend default attributes  -- In progress.
+
+
+BDD Frameworks
+Has theoretical understanding of BDD concepts (feature files, step definitions, hooks, given/when/then) and explored Cucumber, but lacks hands-on work with BDD frameworks in real projects.  -- Done.
+L1, L2
+At least one of: any BDD Framework
+understand main purpose, cons and pros -- Done.
+L3
+Drive the implementation of the application by Gherkin scenarios  - DOne.
+
+
+CI/CD
+Understands CI/CD pipeline stages and aware of typical quality gates. Hands-on experience with pipeline development using Jenkins. 
+L1, L2
+Understanding what is CI & CD -- Done.
+Able to review results of CI job -- Done.
+L3
+Able to configure, trigger and review results of CI job -- Done.
+Run static code analysis and tests as part of CI/CD pipeline, gather reports and publish them to dashboard -- Done. 
+AI-Generated suggestion based on interview transcript
+Logging and reporting
+Decent hands-on with reporting and logging. Showed experience with test reporting tools (Extent, TestNG) and generative AI-based reporting for enhanced test result visualization.  
+L1, L2
+Able to connect to the project and use basic reporting features
+Has theoretical knowledge and pros/cons of using custom reporting
+L4
+Ability to integrate reporting into CI/CD
+AI-Generated suggestion based on interview transcript
+Code Quality  - Done
+Aware of SOLID principles and capable of following those in automation coding. Familiar with static code analysis with SonarQube -- Done.
+
+L1, L2
+Code Review
+
+
+L3
+Static/Dynamic Code Analysis -- Done.
+Coding Standards  -- Done.
+

@@ -1,0 +1,108 @@
+WHat is formParam and when it should be used?
+
+Great question 👍 — this is very commonly asked in API automation interviews, especially for Rest Assured + real-world APIs.
+
+I’ll explain it in a clear → practical → interview-ready way.
+
+🔹 What is formParam in Rest Assured?
+Short Definition (Interview-Perfect)
+
+formParam is used to send form-encoded request parameters (application/x-www-form-urlencoded) in the HTTP request body, typically for HTML form submissions and OAuth token APIs.
+
+🔹 When should you use formParam?
+
+Use formParam ONLY when the API expects data in:
+
+Content-Type: application/x-www-form-urlencoded
+
+
+This is NOT JSON.
+
+🔹 Real-World Scenarios Where formParam Is Used
+Scenario	Why formParam
+OAuth2 token API	Token endpoints expect form data
+Login APIs	Username/password form submit
+Legacy APIs	Built before JSON became standard
+Payment gateways	Form-encoded security data
+HTML form submission	Browser-like behavior
+
+
+🔹 Example 1: OAuth 2.0 Token API (Most Important)
+			Request format expected by server
+			POST /oauth/token
+			Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&username=admin&password=secret
+
+Rest Assured Code
+			given()
+				.contentType(ContentType.URLENC)
+				.formParam("grant_type", "password")
+				.formParam("username", "admin")
+				.formParam("password", "secret")
+			.when()
+				.post("/oauth/token")
+			.then()
+				.statusCode(200);
+
+
+✅ Correct usage
+
+🔹 Example 2: Login API
+			given()
+				.contentType(ContentType.URLENC)
+				.formParam("email", "user@test.com")
+				.formParam("password", "pass123")
+			.when()
+				.post("/login")
+			.then()
+				.statusCode(200);
+
+🔹 What Happens Internally?
+
+formParam converts data into:
+key1=value1&key2=value2
+
+
+and sends it in the request body.
+
+🔹 formParam vs queryParam vs body (Very Important)
+Feature	formParam	queryParam	body
+Location	Request body	URL	Request body
+Content-Type	application/x-www-form-urlencoded	N/A	application/json
+Used for	Forms, OAuth	Filtering	JSON payload
+Encoding	URL encoded	Plain text	JSON
+Example Comparison
+
+❌ Wrong (Using JSON instead of formParam)
+.body("{\"username\":\"admin\",\"password\":\"secret\"}")
+
+✅ Correct
+.formParam("username", "admin")
+.formParam("password", "secret")
+
+🔹 Multiple formParams Example
+given()
+    .contentType(ContentType.URLENC)
+    .formParams(Map.of(
+        "client_id", "abc123",
+        "client_secret", "secret",
+        "grant_type", "client_credentials"
+    ))
+.when()
+    .post("/oauth/token");
+
+🔹 Common Interview Mistakes 🚨
+
+❌ Using formParam with JSON APIs
+❌ Forgetting Content-Type: application/x-www-form-urlencoded
+❌ Mixing formParam and .body()
+
+🔹 formParam vs multipart/form-data
+formParam				multiPart
+Simple text fields		File upload
+OAuth/login				Attachments
+Lightweight				Heavy payload
+🔹 Interview-Ready Final Answer ⭐
+
+formParam is used when an API expects form-encoded data (application/x-www-form-urlencoded), such as OAuth token APIs or login forms. It sends key-value pairs in the request body instead of JSON.

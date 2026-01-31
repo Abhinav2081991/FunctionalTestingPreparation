@@ -1,0 +1,122 @@
+Lambda Expression vs Anonymous Inner Class
+1️⃣ Basic Definition
+🔸 Anonymous Inner Class
+
+A class without a name
+
+Used to implement an interface or extend a class
+
+Exists since Java 1.1
+
+Runnable r = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Running");
+    }
+};
+
+🔸 Lambda Expression
+
+A short, functional-style way to implement a functional interface
+
+Introduced in Java 8
+
+Works only with functional interfaces (single abstract method)
+
+Runnable r = () -> System.out.println("Running");
+
+2️⃣ Key Differences (Table)
+Aspect	Anonymous Inner Class	Lambda Expression
+Syntax	Verbose	Concise
+Java Version	Java 1.1+	Java 8+
+Functional Interface	Not required	Required
+this keyword	Refers to inner class	Refers to enclosing class
+Can define fields	Yes	❌ No
+Can have multiple methods	Yes	❌ No
+Readability	Lower	Higher
+Boilerplate	High	Minimal
+3️⃣ this Keyword Difference (IMPORTANT)
+Anonymous Inner Class
+this   // refers to anonymous inner class instance
+
+Lambda Expression
+this   // refers to enclosing class instance
+
+
+👉 This can cause subtle bugs if misunderstood.
+
+4️⃣ Variable Capture Rules
+Anonymous Inner Class
+
+Can access final or effectively final variables
+
+Lambda Expression
+
+Same rule
+
+But more natural & cleaner
+
+int x = 10;
+
+Runnable r = () -> {
+    // x = 20; ❌ not allowed
+    System.out.println(x);
+};
+
+5️⃣ Performance Difference
+
+Lambda expressions are implemented using invokedynamic
+
+Usually more efficient
+
+Anonymous classes create separate .class files
+
+👉 In modern JVMs, lambdas are generally lighter.
+
+6️⃣ When Anonymous Inner Class is Still Needed
+
+✔ When you need:
+
+Multiple methods
+
+State (fields)
+
+To extend an abstract class (not functional)
+
+Example:
+
+Thread t = new Thread() {
+    int count = 0;
+
+    @Override
+    public void run() {
+        count++;
+    }
+};
+
+7️⃣ Practical Usage in Automation (Selenium / Streams)
+Before Java 8
+wait.until(new ExpectedCondition<Boolean>() {
+    public Boolean apply(WebDriver driver) {
+        return driver.getTitle().contains("Home");
+    }
+});
+
+With Lambda
+wait.until(driver -> driver.getTitle().contains("Home"));
+
+
+✔ Cleaner
+✔ More readable
+✔ Less error-prone
+
+🧠 Interview-Ready One-Liner
+
+“An anonymous inner class is a traditional way to implement interfaces or extend classes using verbose syntax, while a lambda expression provides a concise way to implement functional interfaces introduced in Java 8, with better readability and performance.”
+
+🔥 Summary
+
+✔ Lambdas = functional + concise
+✔ Anonymous class = flexible but verbose
+✔ Lambdas improve readability in modern Java
+✔ Use anonymous class when multiple methods/state is needed

@@ -1,0 +1,232 @@
+Authentication Methods in Rest Assured
+
+Rest Assured provides authentication via:
+
+given().auth().<auth-method>()
+
+1️⃣ Basic Authentication
+🔹 When to use
+
+Legacy APIs
+
+Internal tools
+
+Only safe over HTTPS
+
+🔹 How it works
+
+Sends username:password Base64 encoded
+
+✅ Code
+given()
+    .auth()
+    .basic("admin", "password")
+.when()
+    .get("/secure")
+.then()
+    .statusCode(200);
+
+
+⚠️ Not preemptive → waits for 401 challenge
+
+2️⃣ Preemptive Basic Authentication
+🔹 When to use
+
+CI/CD pipelines
+
+APIs that do not send 401 challenge
+
+Faster than normal basic auth
+
+✅ Code
+given()
+    .auth()
+    .preemptive()
+    .basic("admin", "password")
+.when()
+    .get("/secure")
+.then()
+    .statusCode(200);
+
+
+✔ Most commonly used Basic auth variant
+
+3️⃣ Digest Authentication
+🔹 When to use
+
+Legacy enterprise APIs
+
+Network devices
+
+Password should not travel over network
+
+🔹 Why better than Basic
+
+Uses hash (MD5)
+
+Challenge–response mechanism
+
+✅ Code
+given()
+    .auth()
+    .digest("user", "password")
+.when()
+    .get("/secure")
+.then()
+    .statusCode(200);
+
+
+⚠️ Rare in modern APIs
+
+4️⃣ OAuth 1.0 Authentication
+🔹 When to use
+
+Old APIs (Twitter v1, legacy OAuth systems)
+
+🔹 Requires
+
+Consumer key
+
+Consumer secret
+
+Access token
+
+Token secret
+
+✅ Code
+given()
+    .auth()
+    .oauth(
+        "consumerKey",
+        "consumerSecret",
+        "accessToken",
+        "tokenSecret"
+    )
+.when()
+    .get("/resource")
+.then()
+    .statusCode(200);
+
+
+⚠️ Mostly deprecated now
+
+5️⃣ OAuth 2.0 Authentication (Most Important)
+🔹 When to use
+
+Modern REST APIs
+
+Microservices
+
+Cloud platforms
+
+🔹 Token-based (Bearer token)
+✅ Code
+given()
+    .auth()
+    .oauth2("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+.when()
+    .get("/users")
+.then()
+    .statusCode(200);
+
+
+✔ Automatically adds:
+
+Authorization: Bearer <token>
+
+6️⃣ Form Authentication
+🔹 When to use
+
+Web apps (login form)
+
+Cookie-based sessions
+
+🔹 Flow
+
+Login form submission
+
+Session cookie maintained
+
+✅ Code
+given()
+    .auth()
+    .form("username", "password")
+.when()
+    .get("/dashboard")
+.then()
+    .statusCode(200);
+
+
+⚠️ Less common in pure APIs
+
+7️⃣ CSRF Authentication
+🔹 When to use
+
+Web apps requiring CSRF token
+
+Stateful APIs
+
+✅ Code
+given()
+    .auth()
+    .form("user", "password", new FormAuthConfig("/login", "user", "pass"))
+.when()
+    .get("/secure")
+.then()
+    .statusCode(200);
+
+8️⃣ Custom Header Authentication (Very Common)
+🔹 When to use
+
+API keys
+
+Custom auth tokens
+
+✅ API Key Example
+given()
+    .header("x-api-key", "abc123")
+.when()
+    .get("/data")
+.then()
+    .statusCode(200);
+
+9️⃣ JWT Authentication (Bearer Token)
+🔹 When to use
+
+Stateless authentication
+
+Microservices
+
+Modern security
+
+✅ Code
+given()
+    .header("Authorization", "Bearer " + jwtToken)
+.when()
+    .get("/profile")
+.then()
+    .statusCode(200);
+
+
+✔ Often combined with OAuth2
+
+🔁 Comparison Table (Interview Gold)
+Auth Type	Method	Usage
+Basic	basic()	Legacy
+Preemptive Basic	preemptive().basic()	CI-friendly
+Digest	digest()	Legacy secure
+OAuth 1.0	oauth()	Deprecated
+OAuth 2.0	oauth2()	Modern APIs
+Form	form()	Web apps
+API Key	header()	Microservices
+JWT	header()	Cloud systems
+🧠 Interview-Ready Summary
+
+In Rest Assured, authentication can be handled using Basic, Digest, OAuth1, OAuth2, Form, or custom header mechanisms. OAuth2 and JWT are most common in modern APIs, while Basic and Digest are mainly used in legacy systems.
+
+🚀 Best Practice in Frameworks
+
+✔ Centralize auth in RequestSpecification
+✔ Token generation in @BeforeSuite
+✔ Never hardcode credentials
+✔ Use env variables / vaults

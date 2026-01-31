@@ -1,0 +1,415 @@
+Scenario Context Across Layers (Enterprise-Grade Design)
+🧠 What is Scenario Context?
+
+Scenario Context is a per-scenario memory store used to:
+
+Share data between steps
+
+Avoid static variables
+
+Avoid tight coupling between layers
+
+Support parallel execution
+
+👉 Think of it as a ThreadLocal data backpack for a single scenario.
+
+❌ What Scenario Context is NOT
+
+❌ Not a global variable
+
+❌ Not a config store
+
+❌ Not a database
+
+❌ Not a replacement for Page Objects
+
+🧱 Where Scenario Context Lives (VERY IMPORTANT)
+
+📌 Scenario Context belongs in the CORE layer
+
+core
+ └── context
+     ├── ScenarioContext
+     ├── ContextKey (enum)
+     └── TestContext
+
+
+Why?
+
+Because it is cross-cutting infrastructure, not test logic.
+
+🧩 Core Layer Implementation
+1️⃣ ContextKey (Type Safety – MUST HAVE)
+public enum ContextKey {
+    USER,
+    TOKEN,
+    ORDER_ID,
+    USERS_LIST,
+    RESPONSE
+}
+
+
+📌 Prevents "magic strings"
+
+2️⃣ ScenarioContext (Thread-Safe)
+public class ScenarioContext {
+
+    private final Map<ContextKey, Object> contextMap = new ConcurrentHashMap<>();
+
+    public <T> void set(ContextKey key, T value) {
+        contextMap.put(key, value);
+    }
+
+    public <T> T get(ContextKey key, Class<T> clazz) {
+        return clazz.cast(contextMap.get(key));
+    }
+
+    public boolean contains(ContextKey key) {
+        return contextMap.containsKey(key);
+    }
+
+    public void clear() {
+        contextMap.clear();
+    }
+}
+
+3️⃣ TestContext (Dependency Carrier)
+public class TestContext {
+
+    private final ScenarioContext scenarioContext = new ScenarioContext();
+
+    public ScenarioContext getScenarioContext() {
+        return scenarioContext;
+    }
+}
+
+
+📌 One TestContext per scenario (DI)
+
+🔗 How Context Flows Across Layers
+Feature
+ ↓
+Step Definitions
+ ↓
+Business Steps
+ ↓
+Page Objects / API Clients
+ ↓
+Scenario Context (shared safely)
+
+🧪 Step Definitions Layer (ONLY ENTRY POINT)
+public class UserStepDefinitions {
+
+    private final ScenarioContext scenarioContext;
+    private final UserSteps userSteps;
+
+    public UserStepDefinitions(TestContext testContext, UserSteps userSteps) {
+        this.scenarioContext = testContext.getScenarioContext();
+        this.userSteps = userSteps;
+    }
+
+    @Given("user is created via API")
+    public void createUser() {
+        User user = userSteps.createUser();
+        scenarioContext.set(ContextKey.USER, user);
+    }
+}
+
+
+📌 Only step definitions touch Scenario Context directly
+
+🧠 Business Steps Layer (Context-Aware, Not Context-Coupled)
+public class UserSteps {
+
+    private final UserApiClient userApi;
+
+    public UserSteps(UserApiClient userApi) {
+        this.userApi = userApi;
+    }
+
+    public User createUser() {
+        return userApi.createUser();
+    }
+}
+
+
+📌 Business steps return objects, they do NOT store them
+
+🧱 Page Objects Layer (Context-FREE ZONE 🚫)
+public class DashboardPage {
+
+    public String getWelcomeMessage() {
+        return DriverManager.getDriver()
+                .findElement(By.id("welcome"))
+                .getText();
+    }
+}
+
+
+📌 Page objects never know about Scenario Context
+
+🧪 Reusing Context in Another Step
+@Then("user should be visible on UI")
+public void validateUserOnUI() {
+    User user = scenarioContext.get(ContextKey.USER, User.class);
+    dashboardPage.searchUser(user.getUsername());
+}
+
+🔥 Advanced Example: API → UI Flow
+Step 1: API creates user
+scenarioContext.set(ContextKey.USER_ID, userId);
+
+Step 2: UI validates same user
+String userId = scenarioContext.get(ContextKey.USER_ID, String.class);
+uiSteps.searchUser(userId);
+
+🧠 Clearing Context (Important for Stability)
+Cucumber Hook
+@After
+public void tearDown(TestContext testContext) {
+    testContext.getScenarioContext().clear();
+}
+
+
+📌 Prevents memory leaks in long runs
+
+🚫 Anti-Patterns (Senior Red Flags)
+
+❌ Static maps
+❌ String keys
+❌ Page Objects using context
+❌ Utils writing into context
+❌ Sharing context across scenarios
+
+🎯 Interview-Ready Explanation (45 sec)
+
+“Scenario Context is a per-scenario data store used to safely share data across steps without tight coupling. It lives in the core layer, is accessed only by step definitions, and supports parallel execution via dependency injection and thread safety.”
+
+🧠 One-Line Memory Hook
+
+Context flows downward, never sideways.
+
+🏁 Senior Takeaway
+
+A correct Scenario Context:
+
+Makes tests readable
+
+Keeps layers clean
+
+Enables API-UI chaining
+
+Prevents flaky parallel runs
+
+If you want next:
+
+🔥 Scenario Context + Parallel Execution
+
+🎯 Context vs Test Data Builders
+
+📊 Context misuse refactoring
+
+🧠 DI frameworks (PicoContainer / Spring)
+
+Say the word 👊
+
+📊 Context misuse refactoring
+
+Excellent topic 📊 — this is where senior engineers stand out.
+Most flaky, tightly coupled automation frameworks suffer from Scenario Context misuse.
+
+I’ll walk you through common misuses, why they hurt, and how to refactor them cleanly, with before/after code and decision rules.
+
+📊 Scenario Context Misuse — Refactoring Guide (Senior-Level)
+🧠 Core Rule (Burn This In)
+
+Scenario Context is a courier, not a warehouse.
+
+It should move data between steps, not become the framework’s brain.
+
+🚨 Common Scenario Context Misuses
+❌ Misuse #1: Page Objects Access Scenario Context
+🚫 Problematic Code
+public class DashboardPage {
+
+    public void verifyUser() {
+        User user = ScenarioContext.get("USER"); // ❌
+        driver.findElement(By.id("user")).sendKeys(user.getName());
+    }
+}
+
+❌ Why This Is Bad
+
+Page Objects become test-aware
+
+UI layer depends on Core layer
+
+Violates SRP + DIP
+
+Impossible to reuse page in other tests
+
+✅ Refactor (Correct Design)
+public class DashboardPage {
+
+    public void searchUser(String username) {
+        driver.findElement(By.id("user")).sendKeys(username);
+    }
+}
+
+User user = scenarioContext.get(ContextKey.USER, User.class);
+dashboardPage.searchUser(user.getUsername());
+
+
+📌 Context access only in Step Definitions
+
+❌ Misuse #2: Scenario Context Used as Global Variable
+🚫 Problematic Code
+public class ScenarioContext {
+    public static Map<String, Object> data = new HashMap<>();
+}
+
+❌ Why This Is Bad
+
+Breaks parallel execution
+
+Causes data leakage
+
+Random test failures in CI
+
+✅ Refactor (Thread-Safe Context)
+public class ScenarioContext {
+
+    private final Map<ContextKey, Object> contextMap = new ConcurrentHashMap<>();
+
+    public <T> void set(ContextKey key, T value) {
+        contextMap.put(key, value);
+    }
+}
+
+
+📌 One instance per scenario
+
+❌ Misuse #3: Overusing Context for Everything
+🚫 Problematic Code
+context.set("URL", "https://qa.site.com");
+context.set("BROWSER", "chrome");
+context.set("TIMEOUT", 30);
+
+❌ Why This Is Bad
+
+Configuration ≠ Scenario data
+
+Causes confusion
+
+Hard to debug
+
+✅ Refactor (Proper Separation)
+Data Type	Correct Place
+URL	config.properties
+Browser	CI parameter
+User ID	Scenario Context
+Token	Scenario Context
+❌ Misuse #4: String Keys Instead of Enums
+🚫 Problematic Code
+context.set("user", user);
+context.get("User");
+
+❌ Why This Is Bad
+
+Typos cause runtime failures
+
+No IDE safety
+
+Hard to refactor
+
+✅ Refactor (Enum Keys)
+public enum ContextKey {
+    USER,
+    TOKEN,
+    ORDER_ID
+}
+
+context.set(ContextKey.USER, user);
+
+❌ Misuse #5: Business Steps Writing to Context
+🚫 Problematic Code
+public void createUser() {
+    User user = api.createUser();
+    scenarioContext.set(ContextKey.USER, user); // ❌
+}
+
+❌ Why This Is Bad
+
+Business logic becomes framework-aware
+
+Tight coupling
+
+Hard to unit test
+
+✅ Refactor (Return Objects)
+public User createUser() {
+    return api.createUser();
+}
+
+User user = userSteps.createUser();
+scenarioContext.set(ContextKey.USER, user);
+
+❌ Misuse #6: Context Used Across Scenarios
+🚫 Problematic Code
+static ScenarioContext context;
+
+❌ Why This Is Bad
+
+Cross-test pollution
+
+Non-deterministic failures
+
+✅ Refactor (Lifecycle Management)
+@After
+public void tearDown(TestContext testContext) {
+    testContext.getScenarioContext().clear();
+}
+
+🔥 Real Refactoring Case Study
+BEFORE (Messy)
+
+Page objects read context
+
+Static context
+
+String keys
+
+Business steps mutate context
+
+AFTER (Clean)
+
+Context only in step definitions
+
+Enum keys
+
+Business steps return data
+
+Page objects are pure UI
+
+📉 Flaky failures drop
+📈 Parallel stability improves
+📈 Readability improves
+
+🧠 Decision Matrix: Should This Go in Context?
+Question	If YES	If NO
+Needed in another step?	Context	Local variable
+Config value?	Config file	❌ Context
+Test data object?	Context	❌ Page
+Temporary calculation?	Local	❌ Context
+🎯 Interview-Ready Answer (45 sec)
+
+“Scenario Context misuse usually happens when it’s treated like a global store. I refactor by restricting context access to step definitions, using enum keys, making it thread-safe, and ensuring business and page layers remain context-agnostic. This greatly improves maintainability and parallel execution stability.”
+
+🧠 One-Line Memory Hook
+
+If everything goes into context, nothing is contextual.
+
+🏁 Senior Takeaway
+
+Scenario Context is powerful — but dangerous if abused.
+Use it sparingly, intentionally, and only at the boundaries.

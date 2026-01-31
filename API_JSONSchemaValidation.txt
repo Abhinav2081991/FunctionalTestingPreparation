@@ -1,0 +1,60 @@
+1️⃣ What Is JSON Schema?
+
+JSON Schema is a contract/specification that defines:
+Structure of JSON
+Mandatory vs optional fields
+Data types
+Allowed values
+Field formats & constraints
+
+
+JSON Schema vs Normal Assertions
+Aspect						Assertions				JSON Schema
+Structure validation		❌ Manual				✅ Automatic
+Data type validation		❌ Multiple asserts		✅ Built-in
+Mandatory fields			❌ Manual				✅ Required
+Extra fields				❌ Hard					✅ Easy
+Maintenance					❌ High					✅ Low
+
+
+9️⃣ Best Practices (Senior-Level Answer)
+
+Maintain separate schema files
+One schema per endpoint & response type
+Validate both success & error responses
+Use additionalProperties: false
+Version schemas along with APIs
+Run schema validation in CI pipelines
+
+“JSON Schema defines the API contract by validating structure, mandatory fields, data types, and allowed values, ensuring backward compatibility and preventing breaking changes.”
+
+
+Rest Assured JSON Schema Validation Test
+	Maven Dependency
+	<dependency>
+		<groupId>io.rest-assured</groupId>
+		<artifactId>json-schema-validator</artifactId>
+		<version>5.4.0</version>
+		<scope>test</scope>
+	</dependency>
+	
+
+
+Test Code - 
+		@Test
+			public void validateCustomerResponseSchema() {
+
+				given()
+					.contentType(ContentType.JSON)
+				.when()
+					.get("/customers/10001")
+				.then()
+					.statusCode(200)
+					.contentType(ContentType.JSON)
+					.body(matchesJsonSchemaInClasspath(
+							"schema/customer-schema.json"
+					));
+			}	
+			
+			
+			System.out.println(matchesJsonSchema(new File("src/test/java/ApiTests/jsonschema.json")).matches(json1)); -- response will be a boolean.

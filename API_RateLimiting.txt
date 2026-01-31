@@ -1,0 +1,411 @@
+Rate Limiting in API Testing – Practical Examples (Rest Assured + Java)
+1️⃣ Validate Basic Rate Limiting (HTTP 429)
+Scenario
+
+API allows 5 requests per minute per user
+
+Test Goal
+
+First 5 → 200 OK
+
+6th → 429 Too Many Requests
+
+Code
+@Test
+public void validateRateLimitExceeded() {
+
+    for (int i = 1; i <= 6; i++) {
+        Response response =
+            given()
+                .header("Authorization", "Bearer " + TOKEN)
+            .when()
+                .get("/api/orders");
+
+        if (i <= 5) {
+            response.then().statusCode(200);
+        } else {
+            response.then().statusCode(429);
+        }
+    }
+}
+
+
+✔ Simple
+✔ Deterministic
+✔ Interview-friendly
+
+2️⃣ Validate Retry-After Header (Very Important)
+Why this matters
+
+Rate limiting without Retry-After is incomplete
+
+Code
+Response response =
+    given()
+        .header("Authorization", "Bearer " + TOKEN)
+    .when()
+        .get("/api/orders");
+
+response.then()
+        .statusCode(429)
+        .header("Retry-After", notNullValue());
+
+Advanced Validation
+int retryAfter = Integer.parseInt(response.getHeader("Retry-After"));
+assertTrue(retryAfter > 0);
+
+3️⃣ Token Bucket / Sliding Window Validation
+Scenario
+
+10 requests per 10 seconds (burst allowed)
+
+Test Strategy
+
+Fire 10 quickly → OK
+
+11th → 429
+
+@Test
+public void validateBurstRateLimit() {
+
+    IntStream.rangeClosed(1, 11).forEach(i -> {
+        Response response = given().get("/api/products");
+
+        if (i <= 10) {
+            response.then().statusCode(200);
+        } else {
+            response.then().statusCode(429);
+        }
+    });
+}
+
+
+✔ Java 8 Stream
+✔ Realistic burst testing
+
+4️⃣ User-Based Rate Limiting (Per Token)
+Scenario
+
+Each user has independent limits
+
+@Test
+public void validateUserSpecificRateLimit() {
+
+    Response user1 = given()
+        .header("Authorization", "Bearer " + USER1_TOKEN)
+        .get("/api/orders");
+
+    Response user2 = given()
+        .header("Authorization", "Bearer " + USER2_TOKEN)
+        .get("/api/orders");
+
+    user1.then().statusCode(200);
+    user2.then().statusCode(200);
+}
+
+
+✔ Confirms isolation
+✔ Prevents shared throttling bugs
+
+5️⃣ IP-Based Rate Limiting
+Scenario
+
+Limit enforced by client IP
+
+@Test
+public void validateIpRateLimit() {
+
+    for (int i = 0; i < 6; i++) {
+        Response response =
+            given()
+                .header("X-Forwarded-For", "10.10.10.1")
+            .when()
+                .get("/api/search");
+
+        if (i < 5) {
+            response.then().statusCode(200);
+        } else {
+            response.then().statusCode(429);
+        }
+    }
+}
+
+
+✔ Common in gateways (NGINX, Kong, Apigee)
+
+6️⃣ Rate Limit Reset Validation (Time-Based)
+Scenario
+
+Limit resets every minute
+
+@Test
+public void validateRateLimitReset() throws InterruptedException {
+
+    // Exceed limit
+    IntStream.range(0, 6).forEach(i -> given().get("/api/payments"));
+
+    // Wait for reset
+    Thread.sleep(60000);
+
+    // Should succeed again
+    given().get("/api/payments")
+           .then().statusCode(200);
+}
+
+
+⚠️ Use sparingly
+✔ Good for nightly builds
+
+7️⃣ Validate Rate Limit Headers (Production-Level)
+
+Many APIs expose quota headers:
+
+response.then()
+    .header("X-RateLimit-Limit", notNullValue())
+    .header("X-RateLimit-Remaining", notNullValue())
+    .header("X-RateLimit-Reset", notNullValue());
+
+Validate Remaining Decreases
+int remaining1 = Integer.parseInt(response1.getHeader("X-RateLimit-Remaining"));
+int remaining2 = Integer.parseInt(response2.getHeader("X-RateLimit-Remaining"));
+
+assertTrue(remaining2 < remaining1);
+
+8️⃣ Negative Scenario: Parallel Rate Limiting (Concurrency)
+Scenario
+
+Prevent abuse via parallel calls
+
+ExecutorService executor = Executors.newFixedThreadPool(10);
+
+List<Callable<Integer>> tasks =
+    IntStream.range(0, 15)
+        .mapToObj(i -> (Callable<Integer>) () ->
+            given().get("/api/checkout").statusCode()
+        )
+        .collect(Collectors.toList());
+
+List<Future<Integer>> results = executor.invokeAll(tasks);
+
+long throttled =
+    results.stream()
+        .filter(f -> {
+            try { return f.get() == 429; }
+            catch (Exception e) { return false; }
+        }).count();
+
+assertTrue(throttled > 0);
+
+
+✔ Enterprise-grade test
+✔ Detects race conditions
+
+9️⃣ Framework-Level Abstraction (Senior-Level)
+RateLimitVerifier Utility
+public class RateLimitVerifier {
+
+    public static void assertRateLimited(Supplier<Response> request, int allowed) {
+        IntStream.range(0, allowed + 1).forEach(i -> {
+            Response r = request.get();
+            if (i < allowed)
+                r.then().statusCode(200);
+            else
+                r.then().statusCode(429);
+        });
+    }
+}
+
+Usage
+RateLimitVerifier.assertRateLimited(
+    () -> given().get("/api/invoices"),
+    5
+);
+
+
+✔ Clean
+✔ Reusable
+✔ SOLID-friendly
+
+🔥 Common Mistakes (Interview Gold)
+
+❌ Only validating 429
+❌ Ignoring Retry-After
+❌ Hardcoding sleeps everywhere
+❌ Not testing concurrency
+❌ Not validating per-user isolation
+
+🎯 Interview-Ready Summary
+
+“In API automation, I validate rate limiting not just by asserting 429 responses, but by verifying quota headers, Retry-After behavior, burst handling, concurrency protection, and per-user isolation using Rest Assured. For reliability, I abstract rate-limit assertions into reusable utilities and avoid brittle time-based sleeps.”
+
+🧠 Final Takeaway
+
+✔ Rate limiting = functional + non-functional testing
+✔ Validate behavior, headers, reset, concurrency
+✔ Use Streams & Executors for realism
+✔ Build reusable validators
+
+
+
+-------------------------------------------------------------------------------------------------------------------------
+
+
+WireMock-Based Rate-Limit Simulation (CI-Safe)
+🎯 What We’re Solving
+
+Avoid hitting real API gateways
+
+No sleeps, no flakiness
+
+Deterministic 429 responses
+
+Validate headers (Retry-After, quota headers)
+
+🧠 Strategy (High Level)
+
+We simulate:
+
+First N requests → 200
+
+Next request → 429 Too Many Requests
+
+Add realistic headers
+
+This is contract testing for throttling, not load testing.
+
+1️⃣ Add Dependencies
+<dependencies>
+    <!-- WireMock -->
+    <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock-jre8</artifactId>
+        <version>2.35.0</version>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- Rest Assured -->
+    <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <version>5.4.0</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+
+2️⃣ Start WireMock (JUnit Rule)
+@Rule
+public WireMockRule wireMockRule = new WireMockRule(8089);
+
+
+Base URL for tests:
+
+RestAssured.baseURI = "http://localhost:8089";
+
+3️⃣ Simulate Rate Limiting (Stateful Scenario)
+🔹 WireMock Stub: Allow 5 Requests, Then 429
+@Before
+public void setupRateLimitStub() {
+
+    // Requests 1–5 → 200 OK
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs(STARTED)
+        .willReturn(aResponse().withStatus(200))
+        .willSetStateTo("SECOND"));
+
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs("SECOND")
+        .willReturn(aResponse().withStatus(200))
+        .willSetStateTo("THIRD"));
+
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs("THIRD")
+        .willReturn(aResponse().withStatus(200))
+        .willSetStateTo("FOURTH"));
+
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs("FOURTH")
+        .willReturn(aResponse().withStatus(200))
+        .willSetStateTo("FIFTH"));
+
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs("FIFTH")
+        .willReturn(aResponse().withStatus(200))
+        .willSetStateTo("LIMIT_EXCEEDED"));
+
+    // 6th request → 429
+    stubFor(get(urlEqualTo("/api/orders"))
+        .inScenario("Rate Limit Scenario")
+        .whenScenarioStateIs("LIMIT_EXCEEDED")
+        .willReturn(aResponse()
+            .withStatus(429)
+            .withHeader("Retry-After", "30")
+            .withHeader("X-RateLimit-Limit", "5")
+            .withHeader("X-RateLimit-Remaining", "0")
+        ));
+}
+
+
+✔ Deterministic
+✔ No timing dependency
+✔ CI-safe
+
+4️⃣ Validate Rate Limiting via Rest Assured
+@Test
+public void shouldEnforceRateLimit() {
+
+    for (int i = 1; i <= 6; i++) {
+
+        Response response =
+            given()
+            .when()
+                .get("/api/orders");
+
+        if (i <= 5) {
+            response.then().statusCode(200);
+        } else {
+            response.then()
+                .statusCode(429)
+                .header("Retry-After", equalTo("30"))
+                .header("X-RateLimit-Remaining", equalTo("0"));
+        }
+    }
+}
+
+
+🎯 This is exactly how gateways behave, minus the chaos.
+
+5️⃣ Simulate Per-User Rate Limiting (Advanced)
+stubFor(get(urlEqualTo("/api/profile"))
+    .withHeader("Authorization", equalTo("Bearer userA"))
+    .willReturn(aResponse().withStatus(429)));
+
+stubFor(get(urlEqualTo("/api/profile"))
+    .withHeader("Authorization", equalTo("Bearer userB"))
+    .willReturn(aResponse().withStatus(200)));
+
+
+✔ Validate isolation
+✔ Catch shared-bucket bugs
+
+6️⃣ Why This Is CI-Perfect 🧠
+Problem	WireMock Solves
+Flaky throttling	✔ Deterministic
+Long sleeps	✔ None
+API abuse	✔ Local
+Shared env impact	✔ Isolated
+Hard to reproduce bugs	✔ Replayable
+7️⃣ When to Use WireMock vs Real Gateway
+Use Case	Approach
+PR / CI	WireMock
+Contract validation	WireMock
+Boundary checks	WireMock
+Real quota tuning	Pre-Prod only
+Load testing	JMeter / Gatling
+🎯 Interview-Ready Answer
+
+“We simulate rate limiting in CI using WireMock scenarios, returning deterministic 429 responses with quota headers after a defined number of requests. This allows us to validate client behavior, Retry-After handling, and throttling logic without hitting real API gateways or destabilizing shared environments.”

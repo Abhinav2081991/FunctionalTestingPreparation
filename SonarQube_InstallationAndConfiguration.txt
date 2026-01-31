@@ -1,0 +1,277 @@
+What is SonarQube?
+
+SonarQube is a static code analysis platform used to detect bugs, vulnerabilities, code smells, and enforce quality gates.
+
+1️⃣ Prerequisites
+🔹 System Requirements
+
+Java 17 (mandatory for SonarQube 9.x+)
+
+OS: Windows / Linux / macOS
+
+RAM: Minimum 4 GB (8 GB recommended)
+
+Disk: 5–10 GB
+
+🔹 Verify Java
+java -version
+
+2️⃣ Download SonarQube
+
+Go to SonarQube official site
+
+Download Community / Developer / Enterprise edition
+
+Extract the ZIP file
+
+Example:
+
+sonarqube-9.x.x
+
+3️⃣ SonarQube Directory Structure (Important)
+sonarqube
+│
+├── bin          → Startup scripts
+├── conf         → Configuration
+├── data         → Index data
+├── extensions   → Plugins
+├── logs         → Logs
+
+4️⃣ Configure SonarQube (sonar.properties)
+
+📄 sonarqube/conf/sonar.properties
+
+🔹 Minimal Configuration (Local Setup)
+sonar.host.url=http://localhost:9000
+
+🔹 Database Configuration (Recommended for Enterprise)
+sonar.jdbc.username=sonar
+sonar.jdbc.password=sonar
+sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
+
+
+📌 Note:
+
+H2 DB → Only for demo
+
+PostgreSQL → Production standard
+
+5️⃣ Start SonarQube
+🔹 Windows
+cd sonarqube/bin/windows-x86-64
+StartSonar.bat
+
+🔹 Linux / macOS
+cd sonarqube/bin/linux-x86-64
+./sonar.sh start
+
+🔹 Verify
+
+Open browser:
+
+http://localhost:9000
+
+6️⃣ First-Time Login
+Field	Value
+Username	admin
+Password	admin
+
+➡ You’ll be prompted to change password
+
+7️⃣ Create SonarQube Token (Very Important)
+
+Go to My Account → Security
+
+Generate token (e.g. jenkins-token)
+
+Copy and store securely
+
+📌 Used by Jenkins / CI tools
+
+8️⃣ Install Sonar Scanner
+🔹 Option 1: CLI Scanner
+
+Download SonarScanner
+Add to PATH
+
+Verify:
+
+sonar-scanner -v
+
+🔹 Option 2: Maven Plugin (Most Common)
+
+No separate install needed
+Used via:
+
+mvn sonar:sonar
+
+9️⃣ Analyze a Project (Quick Test)
+🔹 Maven Project
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=demo-project \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.login=YOUR_TOKEN
+
+🔟 Configure Quality Gates
+🔹 Where
+SonarQube → Quality Gates
+
+🔹 Typical Rules
+
+No new blocker bugs
+Coverage ≥ 80%
+No critical vulnerabilities
+
+Maintainability rating A
+
+📌 Quality Gate decides build pass/fail in CI
+
+1️⃣1️⃣ SonarQube with Jenkins (Config Summary)
+
+Install SonarQube Scanner plugin
+
+Add SonarQube server + token
+
+Add pipeline stage:
+
+withSonarQubeEnv('SonarQube') {
+    sh 'mvn sonar:sonar'
+}
+
+1️⃣2️⃣ Common Issues & Fixes
+Issue	Fix
+SonarQube not starting	Check Java 17
+Port 9000 busy	Change sonar.web.port
+Permission error	Run as non-root user
+DB connection fails	Verify JDBC URL
+🎯 Interview-Ready One-Liner
+
+“SonarQube is installed by setting up Java, configuring sonar.properties, starting the server, generating tokens, and integrating it with build tools like Maven or Jenkins to enforce quality gates.”
+
+
+
+--------------------------FOR TOKEN - 
+
+add the properties from sonar-project.properties file in settings.xml in m2 repository - 
+
+<settings>
+  <servers>
+    <server>
+      <id>sonar</id>
+      <username>sqa_988ad24dd9ca8cf562d733aec4e255f8477ffe7b</username>
+    </server>
+  </servers>
+</settings>
+
+
+---------------------------------------------- for other properties - 
+
+OPTION 1 (BEST PRACTICE): Move Properties to pom.xml ⭐
+
+This is the recommended approach for Maven projects.
+
+📌 pom.xml
+<properties>
+    <sonar.projectKey>SOLIDFramework</sonar.projectKey>
+    <sonar.projectName>SOLIDFramework</sonar.projectName>
+    <sonar.host.url>http://localhost:9000</sonar.host.url>
+    <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+    <sonar.sources>src/main/java</sonar.sources>
+    <sonar.tests>src/test/java</sonar.tests>
+	<sonar.token>sqa_988ad24dd9ca8cf562d733aec4e255f8477ffe7b</sonar.token>
+
+    <!-- Selenium / Cucumber specific -->
+    <sonar.exclusions>
+        **/target/**,
+        **/generated/**,
+        **/*Runner.java
+    </sonar.exclusions>
+</properties>
+
+
+Then run:  -- this can be triggerred from Jenkins too.
+
+mvn clean verify sonar:sonar -Dsonar.token=XXXX
+
+
+✔ Fully supported
+✔ CI/CD friendly
+✔ Interview-safe answer
+
+✅ OPTION 2: Force Maven to Read sonar-project.properties (Allowed but NOT Recommended)
+
+If you must use sonar-project.properties, do this:
+
+📌 sonar-project.properties
+sonar.projectKey=SOLIDFramework
+sonar.projectName=SOLIDFramework
+sonar.sources=src/main/java
+sonar.tests=src/test/java
+sonar.java.binaries=target/classes
+sonar.exclusions=**/target/**,**/*Runner.java
+
+📌 Command
+mvn clean verify sonar:sonar \
+-Dsonar.project.settings=sonar-project.properties \
+-Dsonar.token=XXXX
+
+
+⚠️ Downsides:
+
+Easy to break in Jenkins
+
+Confusing ownership (Maven vs Sonar)
+
+Not enterprise-preferred
+
+✅ OPTION 3: Use SonarScanner CLI (Not Maven)
+
+If you want Sonar to natively read sonar-project.properties:
+
+sonar-scanner
+
+
+But ❌ this bypasses Maven lifecycle, so:
+No test execution
+No coverage integration
+Not recommended for Java projects
+
+
+✅ What You Should Use (Final Recommendation) 
+
+Scenario								Best Choice
+Maven + Selenium + Cucumber				✅ pom.xml
+Jenkins Pipeline						✅ pom.xml + settings.xml token
+Non-Maven project						sonar-project.properties
+Learning only							Either
+
+
+--------------------------------------------------------SONARCUBE Integration with Jenkins ----------------------------------------------------------
+
+
+1. Install Jenkins Plugins
+
+			In Jenkins → Manage Jenkins → Plugins install:
+
+			✔ SonarQube Scanner for Jenkins
+			✔ Maven Integration Plugin
+
+
+2. 3️⃣ Configure SonarQube Server in Jenkins
+
+			Jenkins → Manage Jenkins → Configure System
+
+			🔹 SonarQube servers
+
+			Name: SonarQube
+			Server URL: http://localhost:9000
+			Authentication Token:
+			Generate token in SonarQube
+			Paste here
+
+			Select - ✔️ “Environment variables”
+
+			📌 This creates:
+
+			SONAR_HOST_URL
+			SONAR_AUTH_TOKEN

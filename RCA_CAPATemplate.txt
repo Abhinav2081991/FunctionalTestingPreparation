@@ -1,0 +1,71 @@
+Created by Govind Gopinathan Nair on Jun 10, 2022  3 minute read
+Page title scheme: "CAPA#<CAPA Number>: <Team> | <CAPA Title>"
+
+Created on  
+
+Summary
+ 
+
+CAPA Activities Timeline
+0	 	Creation	
+initial CAPA summary filled out by CAPA Requester
+max 3 days	 	Request approval
+(or rejection)	
+request approval by CAPA Manager  by
+max 10 days	 	Investigation	
+investigation performed by CAPA Owner <mention name and due date once request is approved>
+page moved to 2-Review (once investigation is completed)
+post "Ready for Review" CAPA update in #pq-capas-incidents
+max 15 days	 	
+Review
+
+investigation approval by CAPA Manager  by
+investigation approval by CAPA Master (process correctness)  by
+investigation approval by CAPA Requester  by
+
+ 	Presentation	
+CAPA presentation (optional)
+Implementation Progress
+
+ 	Implementation	
+short-term action items implemented
+long-term action items implemented
+page moved to 4-Completed once all action items are implemented
+post "Implementation Done" CAPA update in #pq-capas-incidents
+Stakeholders
+CAPA Requester: 
+CAPA Manager:
+CAPA Owner:
+CAPA Progress Manager:
+CAPA justification
+
+
+Investigation
+Context
+Detailed Description
+Root Cause Analysis
+Drill down to answer the root cause of the issue.
+
+Use The 5 Whys to structure your Root Cause Analysis.
+
+Ensure to include contributing factors.
+
+... 
+Learnings
+Example questions
+
+Did we detect the incident quickly? What helped with it?
+Did we respond to the incident quickly? What helped with it?
+Were we able to mitigate the incident effectively? What helped with it?
+Did we communicate effectively around the incident (internally and externally)?
+What Went Well?
+What Did We Learn?
+Action items
+CAPA meeting
+Date: 
+
+Time: 
+
+Attendees: Mandatory attendants invited (CAPA requester, manager, owner, master)?; are the teams involved aware of the CAPA and invited to the meeting?
+
+meeting notes

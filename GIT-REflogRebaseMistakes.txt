@@ -1,0 +1,171 @@
+How to Recover from a Git Rebase Mistake Using reflog
+🧠 First: What Really Happens During a Rebase?
+
+When you run:
+
+git rebase main
+
+
+Git:
+
+Moves HEAD back in history
+
+Replays commits one by one
+
+Changes commit hashes
+
+Temporarily detaches HEAD
+
+If anything goes wrong:
+
+Commits look “lost”
+
+Branch history looks corrupted
+
+Panic ensues 😄
+
+➡️ But commits are NOT deleted immediately
+➡️ Git keeps a local movement log → reflog
+
+📘 What is git reflog?
+
+reflog records every movement of HEAD and branches — even if commits are no longer visible.
+
+Key Facts
+Property	Detail
+Scope	Local repo only
+Tracks	checkout, rebase, reset, commit
+Time-based	Entries expire (~90 days)
+Saves	“Lost” commits
+🔍 Step 1: Inspect the Reflog
+git reflog
+
+Example Output
+a1b2c3d HEAD@{0}: rebase finished
+e4f5g6h HEAD@{1}: rebase: pick commit-3
+9a8b7c6 HEAD@{2}: rebase: pick commit-2
+123abcd HEAD@{3}: checkout: moving from feature to main
+456efgh HEAD@{4}: commit: added login test
+
+
+📌 HEAD@{n} is your time machine
+
+🟢 Scenario 1: Rebase Went Wrong — Want to Undo It Completely
+Goal
+
+👉 Go back to state before rebase started
+
+Steps
+
+Find reflog entry just before rebase
+
+Reset branch
+
+git reset --hard HEAD@{4}
+
+
+✔ Branch restored
+✔ Commits recovered
+✔ Rebase undone
+
+🟢 Scenario 2: You Rebased & Force-Pushed (Shared Branch Disaster)
+Reality Check
+
+Others may already have pulled
+
+Resetting shared branch is dangerous
+
+Safe Recovery
+
+Recover commits locally
+
+git reflog
+git checkout -b recovery-branch HEAD@{n}
+
+
+Share recovery branch
+
+Team coordinates fix
+
+🔥 Senior behavior: fix without panic
+
+🟢 Scenario 3: You Closed Terminal During Rebase Conflict
+Git State
+git status
+
+Options
+Abort rebase
+git rebase --abort
+
+Continue after fixing conflicts
+git add .
+git rebase --continue
+
+
+📌 reflog helps you find where you were if unsure
+
+🟢 Scenario 4: Commits Missing After Interactive Rebase
+Example Mistake
+
+Accidentally dropped a commit in:
+
+git rebase -i
+
+Recovery
+git reflog
+git checkout -b restore-commit HEAD@{n}
+
+
+Then cherry-pick back:
+
+git cherry-pick <commit-id>
+
+🟢 Scenario 5: Branch Deleted After Rebase
+Recovery
+git reflog
+git checkout -b recovered-branch <commit-id>
+
+
+✔ Branch restored
+✔ History intact
+
+🔥 Scenario 6: Hard Reset After Rebase (Worst Case)
+git reset --hard HEAD~5
+
+Still Recoverable!
+git reflog
+git reset --hard HEAD@{n}
+
+
+📌 Reflog tracks resets too
+
+🧠 How to Identify the Right Reflog Entry
+Heuristics
+
+Look for:
+
+checkout
+
+rebase start
+
+rebase finished
+
+Choose entry before damage
+
+⚠️ Critical Safety Notes
+
+❌ git gc may delete old reflog entries
+❌ Reflog is local only
+❌ Don’t reflog-panic on shared branches
+
+🔐 Best Practices to Avoid Rebase Disasters
+
+✔ Rebase only private branches
+✔ Never rebase main
+✔ Push frequently
+✔ Use branch protection
+✔ Take a breath before --force
+
+🎯 Interview-Ready Explanation (30 seconds)
+
+“During a rebase, Git rewrites history but keeps a local record of HEAD movements in reflog. If something goes wrong, I use git reflog to locate the commit before the rebase and reset the branch or create a recovery branch. Reflog has saved me multiple times from rebase mistakes.”

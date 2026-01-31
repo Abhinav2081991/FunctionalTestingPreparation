@@ -1,0 +1,448 @@
+Advanced WireMock Mocking Features (With Code)
+1️⃣ Stateful Mocking (Scenario-Based Responses)
+📌 Use Case
+
+API behaves differently based on state (order lifecycle, payment flow).
+
+Example
+
+POST /order → CREATED → PAID
+
+stubFor(post(urlEqualTo("/order"))
+    .inScenario("Order Lifecycle")
+    .whenScenarioStateIs(STARTED)
+    .willSetStateTo("CREATED")
+    .willReturn(aResponse()
+        .withStatus(201)
+        .withBody("{ \"status\": \"CREATED\" }")));
+
+stubFor(post(urlEqualTo("/order/pay"))
+    .inScenario("Order Lifecycle")
+    .whenScenarioStateIs("CREATED")
+    .willSetStateTo("PAID")
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withBody("{ \"status\": \"PAID\" }")));
+
+
+✔ Simulates real backend workflows
+✔ Perfect for API chaining tests
+
+2️⃣ Dynamic Responses with Response Templating
+📌 Use Case
+
+Return dynamic values like IDs, timestamps, headers.
+
+Enable Templating
+WireMockServer wireMockServer =
+    new WireMockServer(options()
+        .port(8080)
+        .extensions(new ResponseTemplateTransformer(true)));
+
+Example: Generate Dynamic Order ID
+stubFor(post(urlEqualTo("/orders"))
+    .willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody("""
+        {
+          "orderId": "{{randomValue length=10 type='ALPHANUMERIC'}}",
+          "createdAt": "{{now}}"
+        }
+        """)
+        .withTransformers("response-template")));
+
+
+✔ Removes hardcoding
+✔ CI-friendly
+
+3️⃣ Request Body Matching (Advanced Validation)
+📌 Use Case
+
+Mock behavior changes based on payload content.
+
+Exact JSON Match
+stubFor(post(urlEqualTo("/payment"))
+    .withRequestBody(equalToJson("""
+        { "method": "CREDIT_CARD" }
+    """))
+    .willReturn(ok()));
+
+JSON Path Matching
+stubFor(post(urlEqualTo("/payment"))
+    .withRequestBody(matchingJsonPath("$.amount", greaterThan("1000")))
+    .willReturn(aResponse()
+        .withStatus(402)
+        .withBody("Payment requires approval")));
+
+
+✔ Conditional mocking
+✔ Business-rule simulation
+
+4️⃣ Header-Based & Query Param Matching
+📌 Use Case
+
+Auth, versioning, locale, feature flags.
+
+stubFor(get(urlPathEqualTo("/users"))
+    .withHeader("Authorization", matching("Bearer .*"))
+    .withQueryParam("version", equalTo("v2"))
+    .willReturn(okJson("{ \"user\": \"premium\" }")));
+
+
+✔ Mimics real API gateways
+
+5️⃣ Fault Injection (Chaos Testing)
+📌 Use Case
+
+Test client resilience, retries, timeouts.
+
+Network Faults
+stubFor(get(urlEqualTo("/inventory"))
+    .willReturn(aResponse()
+        .withFault(Fault.CONNECTION_RESET_BY_PEER)));
+
+Random Delay
+stubFor(get(urlEqualTo("/slow-api"))
+    .willReturn(aResponse()
+        .withFixedDelay(5000)
+        .withStatus(200)));
+
+
+✔ Retry logic validation
+✔ Circuit breaker testing
+
+6️⃣ Rate Limiting Simulation
+📌 Use Case
+
+Validate 429 handling.
+
+AtomicInteger counter = new AtomicInteger(0);
+
+stubFor(get(urlEqualTo("/rate-limited"))
+    .willReturn(aResponse()
+        .withTransformers("response-template")
+        .withBody("""
+        {{#if (gt (increment) 5)}}
+          {{jsonPath request.body '$'}}
+        {{/if}}
+        """)));
+
+
+👉 Better approach (custom transformer):
+
+public class RateLimitTransformer extends ResponseTransformer {
+
+    private static final AtomicInteger COUNT = new AtomicInteger(0);
+
+    @Override
+    public Response transform(Request req, Response res, FileSource fs, Parameters p) {
+        if (COUNT.incrementAndGet() > 5) {
+            return Response.response()
+                    .status(429)
+                    .body("Too Many Requests")
+                    .build();
+        }
+        return Response.response().status(200).body("OK").build();
+    }
+
+    @Override
+    public String getName() {
+        return "rate-limit-transformer";
+    }
+}
+
+7️⃣ Webhooks & Async Callback Simulation
+📌 Use Case
+
+Payment gateways, async notifications.
+
+stubFor(post(urlEqualTo("/payments"))
+    .willReturn(aResponse()
+        .withStatus(202)
+        .withBody("Accepted")));
+
+
+Later:
+
+stubFor(post(urlEqualTo("/callback"))
+    .willReturn(ok()));
+
+
+✔ Simulates async systems
+
+8️⃣ Proxying to Real Service (Hybrid Mode)
+📌 Use Case
+
+Mock unstable dependencies, pass others.
+
+stubFor(any(anyUrl())
+    .willReturn(aResponse()
+        .proxiedFrom("https://real-api.example.com")));
+
+
+✔ Gradual test environment isolation
+
+9️⃣ Verify Requests (Behavior Verification)
+📌 Use Case
+
+Ensure API was called correctly.
+
+verify(postRequestedFor(urlEqualTo("/orders"))
+    .withRequestBody(matchingJsonPath("$.product")));
+
+
+✔ Contract validation
+✔ Prevents silent failures
+
+🔟 Reset & Test Isolation
+@AfterEach
+void resetMocks() {
+    wireMockServer.resetAll();
+}
+
+
+✔ Clean test state
+✔ Parallel-safe
+
+🧠 Senior-Level Best Practices
+
+✔ Use WireMock for external dependencies only
+✔ Combine with Rest Assured for client-side assertions
+✔ Prefer Scenario + Templating over static stubs
+✔ Use faults for resilience testing
+✔ Never hardcode dynamic data
+
+🎯 Interview-Ready Summary
+
+“WireMock provides advanced mocking through stateful scenarios, dynamic response templating, conditional request matching, fault injection, and verification, enabling realistic simulation of complex backend behaviors for resilient API testing.”
+
+If you want next, I can:
+
+🔥 Show WireMock + Cucumber integration
+
+🔥 Build a rate-limit + retry test
+
+🔥 Demonstrate chaos testing with WireMock
+
+🔥 Design enterprise mocking strategy
+
+Just say 🚀
+
+When Wiremock is used in real time usecases in Rest Assured ?
+
+Great question — this is exactly what interviewers and architects want to hear, not “WireMock is used to mock APIs” 😄
+Let’s talk real-time, real-project usage of WireMock with Rest Assured.
+
+🚀 When Is WireMock Used in Real-Time Use Cases (Rest Assured)
+
+Think of WireMock as a controlled stand-in for unstable, expensive, slow, or unavailable dependencies.
+
+1️⃣ Third-Party API Dependencies (Most Common)
+🧠 Problem
+
+Payment gateways
+
+SMS / Email providers
+
+Fraud / Credit score services
+
+OAuth / SSO providers
+
+👉 These are:
+
+Paid
+
+Rate-limited
+
+Unstable
+
+Hard to control test data
+
+✅ Real-Time Use Case
+
+Mock third-party APIs using WireMock while testing your service logic.
+
+Example
+stubFor(post(urlEqualTo("/payment"))
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withBody("{\"status\":\"SUCCESS\"}")));
+
+
+Rest Assured tests your service:
+
+given()
+.when()
+    .post("/checkout")
+.then()
+    .statusCode(200);
+
+
+✔ Safe
+✔ Fast
+✔ Deterministic
+
+2️⃣ Test Environment Not Ready / Down
+🧠 Problem
+
+Backend service not deployed
+
+Dependent microservice unstable
+
+Feature under development
+
+✅ Use Case
+
+QA continues testing by mocking missing services.
+
+Shift-left testing
+
+3️⃣ Negative & Edge Case Testing (Hard to Reproduce in Real Systems)
+Examples
+
+500 Internal Server Error
+
+Timeout
+
+Invalid response schema
+
+Slow responses
+
+Corrupted payloads
+
+WireMock Example
+stubFor(get(urlEqualTo("/inventory"))
+    .willReturn(aResponse()
+        .withFixedDelay(8000)
+        .withStatus(504)));
+
+
+✔ Validates retry logic
+✔ Circuit breaker testing
+
+4️⃣ Contract Testing Between Microservices
+🧠 Problem
+
+Breaking changes between teams
+
+✅ Use Case
+
+WireMock acts as consumer-driven contract provider
+
+stubFor(get(urlEqualTo("/user/123"))
+    .willReturn(okJson("{\"id\":123,\"name\":\"John\"}")));
+
+
+✔ Ensures API shape consistency
+✔ Prevents production breaks
+
+5️⃣ Rate Limiting & Throttling Validation
+🧠 Problem
+
+Hard to hit rate limits reliably in real systems
+
+WireMock Simulation
+stubFor(get(urlEqualTo("/api"))
+    .willReturn(aResponse().withStatus(429)));
+
+
+✔ Test retry/backoff logic
+✔ Validate client resilience
+
+6️⃣ Stateful Business Workflows
+🧠 Problem
+
+Backend state is complex (order lifecycle, payments)
+
+WireMock Scenario Example
+.inScenario("OrderFlow")
+.whenScenarioStateIs(STARTED)
+
+
+✔ Mimics real workflows
+✔ Enables API chaining
+
+7️⃣ CI/CD Stability & Speed
+🧠 Problem
+
+CI flaky due to network issues
+
+External API downtime
+
+Slow execution
+
+✅ Use Case
+
+Replace real dependencies with WireMock in CI.
+
+“Real APIs in CI = flaky pipelines” ❌
+
+✔ Fast
+✔ Reliable
+✔ Parallel-safe
+
+8️⃣ Security & Compliance Restrictions
+🧠 Problem
+
+PII data access restrictions
+
+Compliance limitations
+
+No prod-like data in lower envs
+
+✅ Use Case
+
+WireMock serves synthetic but realistic responses.
+
+✔ No sensitive data
+✔ Audit-friendly
+
+9️⃣ Controlled Test Data & Determinism
+🧠 Problem
+
+Real APIs return unpredictable data
+
+WireMock Fix
+stubFor(get(urlEqualTo("/users"))
+    .willReturn(okJson("{\"id\":1,\"name\":\"Test User\"}")));
+
+
+✔ Repeatable tests
+✔ No false failures
+
+🔟 Parallel & Load-Like Scenarios
+🧠 Problem
+
+Concurrent calls produce inconsistent behavior
+
+WireMock Advantage
+
+No backend contention
+
+Predictable responses
+
+✔ Ideal for parallel Rest Assured runs
+
+🔁 When NOT to Use WireMock
+Scenario	Why
+End-to-end prod validation	Real APIs required
+Performance testing	WireMock ≠ real latency
+Data accuracy validation	Mock ≠ truth
+Final release sign-off	Needs real systems
+🧠 Real Project Strategy (Senior Level)
+Environment	Strategy
+Local dev	WireMock only
+QA	Hybrid (WireMock + real)
+CI	WireMock heavy
+Staging	Mostly real
+Prod	No WireMock
+🎯 Interview-Ready One-Liner
+
+“WireMock is used in real-time Rest Assured testing to isolate external dependencies, simulate failure and edge scenarios, enable contract testing, and stabilize CI pipelines by providing fast, deterministic, and controllable API behavior.”
+
+🔥 Bonus: WireMock + Rest Assured Together
+@BeforeAll
+static void setup() {
+    wireMockServer.start();
+    configureFor("localhost", 8080);
+}

@@ -1,0 +1,24 @@
+nternal Working of Selenium 4 (Deep Dive)
+1️⃣ High-Level Architecture
+
+Selenium 4 follows the W3C WebDriver standard end-to-end.
+
+Test Script
+   |
+   |  (WebDriver APIs)
+   ↓
+Selenium Client (Java / Python / JS)
+   |
+   |  (W3C-compliant JSON over HTTP)
+   ↓
+Browser Driver (ChromeDriver, GeckoDriver, EdgeDriver)
+   |
+   |  (Browser-specific protocol)
+   ↓
+Real Browser
+
+Key Change from Selenium 3
+Selenium 3	Selenium 4
+JSON Wire Protocol					✅ W3C WebDriver Protocol
+Client ↔ Driver translation			No translation layer
+Inconsistent behavior				Standardized behavior

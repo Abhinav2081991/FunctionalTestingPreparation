@@ -1,0 +1,405 @@
+Reusing the SAME Cucumber DataTable Across UI & API Tests
+
+(Detailed, Production-Grade Explanation)
+
+1️⃣ Problem Statement (Why This Is Needed)
+
+In real projects:
+
+UI tests need form input data
+
+API tests need JSON payload
+
+Validation needs comparison across layers
+
+❌ Common anti-patterns:
+
+Separate DataTable for UI
+
+Separate JSON file for API
+
+Hardcoded values in assertions
+
+This causes:
+
+Duplication
+
+Inconsistencies
+
+Maintenance nightmares
+
+2️⃣ Core Principle (Golden Rule)
+
+Convert DataTable → POJO ONCE → reuse the POJO everywhere
+
+This follows:
+
+DRY
+
+Single Source of Truth
+
+Separation of Concerns
+
+SOLID (SRP)
+
+3️⃣ Feature File (Single DataTable for All Layers)
+Scenario: Create user and validate via UI
+  Given user provides registration details
+    | firstName | lastName | city   | zip   |
+    | John      | Doe      | London | 12345 |
+  When user is created via API
+  Then user details should be visible in UI
+
+Why DataTable?
+
+Readable for business
+
+Flexible for UI & API
+
+Supports complex structures
+
+4️⃣ POJO Design (Shared Between UI & API)
+📦 UserRegistration.java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserRegistration {
+
+    private String firstName;
+    private String lastName;
+    private Address address;
+}
+
+📦 Address.java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Address {
+
+    private String city;
+    private String zip;
+}
+
+Why POJOs?
+
+API → JSON serialization (RestAssured)
+
+UI → Object-based validation
+
+Cleaner than Map usage
+
+IDE-friendly & refactor-safe
+
+5️⃣ Central DataTable → POJO Mapper (MOST IMPORTANT PART)
+❌ Bad Practice
+
+Mapping DataTable inside every step definition.
+
+✅ Correct Practice
+
+One dedicated mapper class
+
+📦 DataTableMapper.java
+public class DataTableMapper {
+
+    public static UserRegistration mapToUser(DataTable dataTable) {
+
+        Map<String, String> row = dataTable.asMaps(String.class, String.class).get(0);
+
+        return UserRegistration.builder()
+                .firstName(row.get("firstName"))
+                .lastName(row.get("lastName"))
+                .address(Address.builder()
+                        .city(row.get("city"))
+                        .zip(row.get("zip"))
+                        .build())
+                .build();
+    }
+}
+
+Why this design?
+Benefit	Explanation
+Reusability	Used by UI & API
+SRP	Mapping logic isolated
+Clean steps	Step defs stay readable
+Easy updates	Change mapping in one place
+6️⃣ Step Definitions – Layered Reuse
+Shared Object
+private UserRegistration user;
+
+🔹 Step 1: Read DataTable ONCE
+@Given("user provides registration details")
+public void user_provides_registration_details(DataTable dataTable) {
+    user = DataTableMapper.mapToUser(dataTable);
+}
+
+
+📌 Now user becomes the single source of truth
+
+🔹 Step 2: API Layer Usage
+@When("user is created via API")
+public void create_user_via_api() {
+
+    response = given()
+            .contentType(ContentType.JSON)
+            .body(user)
+            .post("/users");
+
+    response.then().statusCode(201);
+}
+
+Why this works?
+
+RestAssured auto-serializes POJO → JSON
+
+No manual JSON building
+
+Same object used everywhere
+
+🔹 Step 3: UI Validation Using SAME Object
+@Then("user details should be visible in UI")
+public void validate_user_in_ui() {
+
+    assertEquals(
+        user.getFirstName(),
+        driver.findElement(By.id("firstName")).getAttribute("value")
+    );
+
+    assertEquals(
+        user.getAddress().getCity(),
+        driver.findElement(By.id("city")).getText()
+    );
+}
+
+
+🎯 UI and API validated against SAME DATA
+
+7️⃣ Scenario Context (Production-Grade Framework)
+
+For large frameworks, do NOT use instance variables.
+
+📦 ScenarioContext.java
+public class ScenarioContext {
+
+    private Map<String, Object> context = new HashMap<>();
+
+    public void set(String key, Object value) {
+        context.put(key, value);
+    }
+
+    public <T> T get(String key) {
+        return (T) context.get(key);
+    }
+}
+
+Storing Object
+scenarioContext.set("USER", user);
+
+Retrieving Object
+UserRegistration user =
+        scenarioContext.get("USER");
+
+Why ScenarioContext?
+
+Parallel execution safe
+
+Cleaner step definitions
+
+Cross-step data sharing
+
+8️⃣ Handling Multiple Rows (Bulk Users)
+Feature File
+Given user provides multiple users
+  | firstName | lastName | city | zip |
+  | John      | Doe      | NY   | 111 |
+  | Alice     | Smith    | LA   | 222 |
+
+Mapper for Multiple Rows
+public static List<UserRegistration> mapToUsers(DataTable dataTable) {
+
+    return dataTable.asMaps().stream()
+            .map(row -> UserRegistration.builder()
+                    .firstName(row.get("firstName"))
+                    .lastName(row.get("lastName"))
+                    .address(Address.builder()
+                            .city(row.get("city"))
+                            .zip(row.get("zip"))
+                            .build())
+                    .build())
+            .toList();
+}
+
+API Bulk Call
+List<UserRegistration> users =
+        DataTableMapper.mapToUsers(dataTable);
+
+given()
+    .body(users)
+    .post("/users/bulk");
+
+9️⃣ UI + API Cross Validation (Advanced)
+String apiCity =
+    response.jsonPath().getString("address.city");
+
+assertEquals(apiCity, user.getAddress().getCity());
+
+
+📌 Ensures backend & frontend consistency
+
+🔟 When NOT to Use DataTable
+Scenario	Better Option
+Huge payloads	JSON files
+API-only	POJO + JSON
+Data permutations	Scenario Outline
+Performance tests	CSV
+1️⃣1️⃣ Interview-Ready Explanation (MEMORIZE)
+
+We reuse the same DataTable across UI and API by converting it into a POJO once using a dedicated mapper class. This POJO is then used as an API payload and for UI validation, ensuring a single source of truth, no duplication, and consistent end-to-end validation.
+
+1️⃣2️⃣ Lead-Level Architectural Statement
+
+Our framework decouples data mapping from test logic, allowing DataTable-driven POJOs to seamlessly drive UI automation, API testing, and cross-layer validations.
+
+🔥 Summary Diagram (Mental Model)
+Feature File
+   ↓
+DataTable
+   ↓
+DataTableMapper
+   ↓
+POJO (UserRegistration)
+   ↓        ↓
+ API Call   UI Validation
+ 
+ 
+ 
+ -------------------------------------------------Demo Code ----------------------------------------------------------------
+ 
+ 
+ 2️⃣ Correct Design (Production-Grade)
+Golden Rules
+
+Store exact object you want to reuse
+
+Retrieve it with correct type casting
+
+Never recreate ScenarioContext
+
+Use enum keys (best practice)
+
+3️⃣ Corrected ScenarioContext (Core Class)
+package core.context;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ScenarioContext {
+
+    private final Map<String, Object> context = new HashMap<>();
+
+    public void setContext(String key, Object value) {
+        context.put(key, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getContext(String key) {
+        return (T) context.get(key);
+    }
+}
+
+4️⃣ Context Keys (BEST PRACTICE)
+package core.context;
+
+public enum ContextKey {
+    USERS
+}
+
+5️⃣ Fix TestContext (CRITICAL)
+package core.context;
+
+public class TestContext {
+
+    private final ScenarioContext scenarioContext;
+
+    public TestContext() {
+        this.scenarioContext = new ScenarioContext();
+    }
+
+    public ScenarioContext getScenarioContext() {
+        return scenarioContext;
+    }
+}
+
+
+✅ Now:
+
+One ScenarioContext per scenario
+
+Proper Cucumber DI
+
+6️⃣ FIXED Step Definition Code (IMPORTANT)
+✅ Step 1: Store object correctly
+@Given("I am using a Datatable for Scenario Context")
+public void i_am_using_a_datatable_for_scenario_context(DataTable dataTable) {
+
+    List<Map<String, String>> rows =
+            dataTable.asMaps(String.class, String.class);
+
+    List<UsersLom> users = rows.stream()
+            .map(row -> UsersLom.builder()
+                    .firstName(row.get("firstName"))
+                    .lastName(row.get("lastName"))
+                    .address(AddressLom.builder()
+                            .city(row.get("city"))
+                            .zip(row.get("zip"))
+                            .build())
+                    .build())
+            .toList();
+
+    // Store EXACT object you want to reuse
+    scenarioContext.setContext(
+            ContextKey.USERS.name(),
+            users
+    );
+}
+
+✅ Step 2: Retrieve & use the SAME object
+@Then("I am validating the same in the UI")
+public void i_am_validating_the_same_in_the_ui() {
+
+    List<UsersLom> users =
+            scenarioContext.getContext(ContextKey.USERS.name());
+
+    for (UsersLom user : users) {
+        System.out.println(user.getFirstName());
+        System.out.println(user.getLastName());
+        System.out.println(user.getAddress().getCity());
+        System.out.println(user.getAddress().getZip());
+        System.out.println("------------");
+    }
+}
+
+7️⃣ Why This Works (Interview Explanation)
+
+We create the data object once from the DataTable and store it in Scenario Context. In subsequent steps, we retrieve the same object using a shared context key. This ensures clean data sharing across steps without using static variables, and it supports parallel execution.
+
+8️⃣ Common Interview Trap You Just Avoided 🚨
+Mistake	Why it’s dangerous
+Static variables	Parallel execution failure
+Recreating ScenarioContext	Data loss
+Map without casting	Runtime errors
+Passing TestContext incorrectly	DI breaks
+9️⃣ Mental Model (Very Important)
+Feature File
+   ↓
+DataTable
+   ↓
+POJO (UsersLom)
+   ↓
+ScenarioContext  ← STORE
+   ↓
+ScenarioContext  ← GET
+   ↓
+UI / API / Validation

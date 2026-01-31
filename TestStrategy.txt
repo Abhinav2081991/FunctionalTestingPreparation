@@ -1,0 +1,470 @@
+1. In Software product testing there is a switch from Waterfall:  model to Agile: .  What changes should be accommodated Test Strategy document? Explain with details.
+Answer: “When moving from Waterfall:  to Agile: , the Test Strategy changes from a static, phase-based document to a living document. Testing becomes continuous, aligned with user stories and acceptance criteria. Automation becomes mandatory within the sprint, regression is incremental, environments are used early, and quality ownership shifts from QA to the entire Agile:  team. The strategy is reviewed and refined every sprint or release.”
+
+
+1️⃣ Test Strategy Ownership & Mindset
+Waterfall: 
+Test strategy is created once, early in the project
+Owned mainly by QA team
+Rarely updated
+
+Agile: 
+Test strategy is a living document
+Owned collectively (QA + Dev + Product)
+Reviewed every release / PI
+
+📌 Test Strategy Change
+Test Strategy will be reviewed and refined at the beginning of every release
+and updated based on sprint learnings and retrospectives.
+
+2️⃣ Testing Phases → Continuous Testing
+Waterfall: 
+Requirements → Design → Dev → Testing → UAT → Prod
+
+Agile: 
+Plan → Code → Test → Feedback → Improve (Every Sprint)
+
+
+📌 Strategy Update
+Remove “System Testing Phase”, “Integration Phase”
+
+Introduce:
+Continuous Testing
+Shift-Left Testing
+Early Validation
+
+Testing activities will start from Sprint 0 and continue throughout
+the sprint lifecycle including design and development stages.
+
+3️⃣ Test Planning Approach
+Waterfall: 
+Detailed master test plan
+Test cases written upfront
+Heavy documentation
+
+Agile: 
+Sprint-level test planning
+Lightweight documentation
+Just-enough test cases
+
+📌 Test Strategy Update
+Sprint-wise test planning will be performed during Sprint Planning,
+focusing on acceptance criteria and risk-based testing.
+
+4️⃣ Requirement Handling (CRITICAL CHANGE)
+Waterfall: 
+Stable requirements
+Change requests handled formally
+
+Agile: 
+Requirements evolve every sprint
+User Stories & Acceptance Criteria drive testing
+
+📌 Test Strategy Update
+Testing will be aligned to User Stories and Acceptance Criteria.
+Test cases will be updated dynamically as stories evolve.
+
+5️⃣ Test Design & Documentation
+Waterfall: 
+Detailed test cases
+High traceability upfront
+
+Agile: 
+Acceptance criteria-based testing
+BDD / Gherkin preferred
+Exploratory testing encouraged
+
+📌 Strategy Update
+Test scenarios will be derived from acceptance criteria.
+BDD approach will be adopted where applicable to improve collaboration.
+
+6️⃣ Automation Strategy (MAJOR SHIFT)
+Waterfall: 
+Automation after manual testing
+Mostly regression automation
+
+Agile: 
+Automation is mandatory
+Sprint automation
+CI/CD integrated
+
+📌 Test Strategy Update
+Automation will be implemented within the sprint.
+Regression suite will be executed as part of CI/CD pipelines.
+
+
+Include:
+Automation Pyramid
+Tool stack
+Coverage expectations per sprint
+
+7️⃣ Regression Testing Approach
+Waterfall: 
+Large regression cycle before release
+
+Agile: 
+Incremental regression every sprint
+Automated first, manual fallback
+
+📌 Strategy Update
+Regression testing will be executed incrementally every sprint,
+with priority given to automated regression suites.
+
+8️⃣ Test Environment Strategy
+Waterfall: 
+Single shared environment
+Late environment availability
+
+Agile: 
+Early & frequent environment usage
+Mocking & stubs
+
+📌 Strategy Update
+Test environments will be provisioned early.
+Service virtualization and mocks will be used where dependencies are unavailable.
+
+9️⃣ Defect Management & Metrics
+Waterfall: 
+Defect leakage tracked post-testing
+QA owns defects
+
+Agile: 
+Team owns quality
+Defects discussed daily
+
+📌 Strategy Update
+Defects will be logged and triaged daily during sprint.
+Quality metrics will be reviewed in sprint retrospectives.
+
+
+Metrics change from:
+❌ Test Case Count
+➡️ ✅ Defect Escape Rate, Automation Coverage, Story Pass Rate
+
+🔟 Release & Sign-off Strategy
+
+Waterfall: 
+Formal test sign-off at end
+
+Agile: 
+Incremental sign-off
+Definition of Done (DoD)
+
+📌 Strategy Update
+Quality sign-off will be based on Definition of Done,
+including test coverage, defect thresholds, and automation status.
+
+📊 Summary Table (Interview Favorite)
+Area                                                                                                                                                                                    Waterfall:                                                                                                                                        Agile: 
+Planning                                                                                                                                       One-time                                                                                                                                       Sprint-wise
+Testing                                                                                                                                                                                    Phase-based                                                                                                                                       Continuous
+Automation                                                                                                                                       Optional                                                                                                                                       Mandatory
+Requirements                                                                                          Stable                                                                                                                                                                                    Evolving
+Ownership                                                                                                                                       QA only                                                                                                                                                                                    Whole team
+Regression                                                     End of cycle                                                                                                                                       Every sprint
+Documentation                                                Heavy                                                                                                                                                                                                                                 Lightweight
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+Agile Test Strategy – Sample Template
+1️⃣ Purpose & Objectives
+Purpose
+This document defines the overall testing approach for the product being developed using Agile methodology, ensuring continuous quality delivery.
+
+Objectives
+Validate functional and non-functional requirements continuously
+Enable early defect detection (Shift-Left)
+Support fast, frequent, and reliable releases
+Ensure quality is a shared team responsibility
+
+2️⃣ Scope of Testing
+In Scope
+Functional testing aligned with user stories
+API testing
+UI testing
+Regression testing (incremental)
+Integration testing
+Smoke & sanity testing
+Non-functional testing (performance, security – as applicable)
+
+Out of Scope
+Third-party system validation (covered by vendors)
+Legacy features not impacted by current stories
+
+3️⃣ Agile Testing Approach
+Testing Model
+Testing is performed within each sprint
+Test design starts as soon as user stories are defined
+Continuous feedback to developers
+Key Principles
+Shift-Left Testing
+Early Automation
+Continuous Integration & Continuous Testing
+Exploratory Testing
+
+Testing activities run in parallel with development and are
+not treated as a separate phase.
+
+4️⃣ Roles & Responsibilities
+Role                                             Responsibility
+Product Owner                                             Defines acceptance criteria
+Developers                                             Unit testing, fixing defects
+QA Engineers                                             Test design, execution, automation
+QA Lead                                             Strategy, quality governance
+Scrum Master                                             Process facilitation
+
+📌 Quality is owned by the entire Agile team
+
+5️⃣ Requirement & Test Design Strategy
+
+User Stories are the primary test artifacts
+
+Acceptance Criteria drive test scenarios
+
+Lightweight test documentation
+
+BDD (Gherkin) used where applicable
+
+Example:
+
+Given user is logged in
+When user makes payment using UPI
+Then payment should be successful
+
+6️⃣ Test Levels & Types
+Test Levels
+
+Unit Testing (Dev owned)
+
+Integration Testing
+
+System Testing
+
+Regression Testing
+
+UAT Support
+
+Test Types
+
+Functional
+
+API
+
+UI
+
+Exploratory
+
+Non-functional (Performance, Security – if required)
+
+7️⃣ Automation Strategy
+Automation Principles
+
+Automation within the sprint
+
+Automation-first for regression
+
+Follow Test Automation Pyramid
+
+UI (Low)
+API (Medium)
+Unit (High)
+
+Tools
+UI: Selenium
+API: Rest Assured
+BDD: Cucumber
+Build: Maven
+CI/CD: Jenkins / GitHub Actions
+
+📌 Automation coverage target defined per sprint
+
+8️⃣ Regression Testing Strategy
+
+Regression executed every sprint
+Automated regression suite preferred
+Manual regression only for uncovered areas
+Smoke suite triggered on every build
+
+9️⃣ Test Environment Strategy
+
+Dedicated QA environment
+Early environment access
+Use of mocks/stubs where dependencies are unavailable
+Data refresh before each sprint
+
+🔟 Defect Management
+
+Defect Lifecycle
+Defects logged in Jira
+Daily triage during stand-ups
+Priority based on business impact
+Fix verification within the sprint
+Defect Ownership
+Shared responsibility between QA and Dev
+
+1️⃣1️⃣ Metrics & Reporting
+
+Key Agile Metrics
+Story pass rate
+Defect leakage
+Automation coverage
+Defect density
+Sprint quality trend
+
+📌 Metrics reviewed during sprint retrospective
+
+1️⃣2️⃣ Risk-Based Testing
+High-risk stories tested first
+Business-critical flows prioritized
+Frequent change areas given more coverage
+
+1️⃣3️⃣ Entry & Exit Criteria
+Entry Criteria:
+User stories approved
+Acceptance criteria defined
+Test environment ready
+
+Exit Criteria:
+All acceptance criteria validated
+No critical defects open
+Automation updated
+Regression completed
+
+1️⃣4️⃣ Definition of Done (DoD)
+A story is considered Done when:
+Code completed & reviewed
+Unit tests passed
+Functional tests executed
+Automation updated
+No critical defects pending
+
+1️⃣5️⃣ Continuous Improvement
+Sprint retrospectives used to improve testing approach
+Strategy refined based on learnings
+Tooling & practices evolved continuously
+
+🎤 Interview-Ready Summary (30 sec)
+
+“An Agile Test Strategy focuses on continuous testing within each sprint. It aligns testing with user stories and acceptance criteria, emphasizes automation and shift-left testing, treats quality as a shared responsibility, and evolves continuously based on sprint retrospectives.”
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Agile vs Waterfall – Test Strategy Comparison
+1️⃣ Overall          Philosophy 
+Aspect                                                Waterfall                                             Agile
+Testing Approach                                      Sequential, phase-based                               Continuous & iterative
+Strategy Nature                                       Static document                                       Living document
+Quality Ownership                                     QA team                                               Entire team
+
+Key Shift:
+From “test after build” → “build quality continuously”
+
+2️⃣ Test Strategy Creation & Updates
+Area                                                  Waterfall                                             Agile
+When Created                                          At project start                                      Initial + ongoing
+Updates                                               Rare                                                  Every sprint / release
+Change Handling                                       Formal change requests                                Adaptive & flexible
+
+📌 Agile Strategy must evolve sprint by sprint
+
+3️⃣ Testing Phases
+                                                      Waterfall                                             Agile
+                                                      System Testing Phase                                  No separate phase
+                                                      Integration Phase                                     Continuous integration
+                                                      Regression Phase                                      Sprint-level regression
+
+Agile removes hard testing phases.
+
+4️⃣ Requirement Handling
+Aspect                                                Waterfall                                             Agile
+Requirements                                          Fixed upfront                                         Evolving
+Test Basis                                            Requirement specs                                     User stories & AC
+Change Impact                                         High                                                  Managed per sprint
+
+📌 Agile Test Strategy must accept volatility.
+
+5️⃣ Test Planning Approach
+Area                                             	  Waterfall                                             Agile
+Planning                                              Master test plan                                      Sprint test planning
+Horizon                                               Long-term                                             Short-term
+Flexibility                                           Low                                                   High
+
+Agile strategy supports just-in-time planning.
+
+6️⃣ Test Design & Documentation
+Aspect                                                Waterfall                                             Agile
+Test Cases                                            Detailed, upfront                                     Lightweight
+Documentation                                         Heavy                                                 Minimal
+Traceability                                          Full upfront                                          Incremental
+
+📌 Agile favors working software over documentation.
+
+7️⃣ Automation Strategy
+Area                                                  Waterfall                                             Agile
+Automation Timing                                     After manual testing                                  Within sprint
+Purpose                                               Regression only                                       Continuous validation
+CI/CD Integration                                     Optional                                              Mandatory
+
+Automation is optional in Waterfall, essential in Agile.
+
+8️⃣ Regression Testing
+Aspect                                                Waterfall                                             Agile
+Frequency                                             End of cycle                                          Every sprint
+Size                                                  Large                                                 Incremental
+Execution                                             Mostly manual                                         Mostly automated
+
+Agile strategy emphasizes small, fast regressions.
+
+9️⃣ Test Environment Usage
+Area                                                  Waterfall                                             Agile
+Environment Access                                    Late                                                  Early
+Dependency Handling                                   Wait & test                                           Mocks / stubs
+Stability                                             One stable env                                        Multiple evolving envs
+
+Agile Test Strategy must handle incomplete dependencies.
+
+🔟 Defect Management: 
+Aspect                                                Waterfall                                             Agile
+Defect Ownership                                      QA                                                    Team
+Triage                                                Weekly / phase-end                                    Daily
+Fix Cycle                                             Long                                                  Within sprint
+
+Quality becomes everyone’s responsibility in Agile.
+
+1️⃣1️⃣ Metrics & Reporting
+Waterfall Metrics                                             Agile Metrics
+Test case count                                               Story pass rate
+Execution %                                                   Defect leakage
+Defect count                                                  Automation coverage
+Phase completion                                              Sprint quality trend
+
+📌 Agile focuses on business impact metrics.
+
+1️⃣2️⃣ Release & Sign-off
+Aspect                                                Waterfall                                             Agile
+Sign-off                                              Formal test sign-off                                  Definition of Done
+Release                                               Big-bang                                              Incremental
+Feedback                                              Late                                                  Continuous
+
+Agile eliminates big final sign-offs.
+
+1️⃣3️⃣ Risk Management
+Area                                                  Waterfall                                             Agile
+Risk Identification                                   Early & static                                        Continuous
+Testing Priority                                      Equal                                                 Risk-based
+Adaptability                                          Low                                                   High
+
+Agile strategy is risk-driven.
+
+📊 One-Page Summary Table (Interview Favorite)
+Dimension                                             Waterfall                                             Agile
+Strategy Type                                         Static                                                Dynamic
+Testing Start                                         After dev                                             From sprint start
+Automation                                            Optional                                              Mandatory
+Documentation                                         Heavy                                                 Lightweight
+Change Handling                                       Difficult                                             Easy
+Regression                                            End of cycle                                          Every sprint
+Quality Ownership                                     QA           		                                    Whole team

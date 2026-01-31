@@ -1,0 +1,122 @@
+What is a PUT Method?
+
+PUT is used to:
+
+Update an existing resource completely
+
+The request body usually represents the full object
+
+PUT is idempotent (same request → same result)
+
+🧪 Real-World Example Scenario
+
+👉 Update an existing user profile
+
+Endpoint
+
+PUT /users/{id}
+
+
+Request Body
+
+{
+  "name": "Abhinav Tiwari",
+  "email": "abhinav.tiwari@company.com",
+  "role": "QA Lead"
+}
+
+✅ Simple PUT Example (Rest Assured Java)
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+
+public class PutExampleTest {
+
+    @Test
+    public void updateUser_usingPut() {
+
+        String requestBody = "{\n" +
+                "  \"name\": \"Abhinav Tiwari\",\n" +
+                "  \"email\": \"abhinav.tiwari@company.com\",\n" +
+                "  \"role\": \"QA Lead\"\n" +
+                "}";
+
+        given()
+            .baseUri("https://api.example.com")
+            .contentType("application/json")
+            .pathParam("id", 101)
+            .body(requestBody)
+        .when()
+            .put("/users/{id}")
+        .then()
+            .statusCode(200)
+            .body("name", equalTo("Abhinav Tiwari"))
+            .body("role", equalTo("QA Lead"));
+    }
+}
+
+🧱 PUT with POJO (Enterprise-grade way)
+📌 User POJO
+public class User {
+
+    private String name;
+    private String email;
+    private String role;
+
+    // getters and setters
+}
+
+📌 PUT Using POJO
+User user = new User();
+user.setName("Abhinav Tiwari");
+user.setEmail("abhinav.tiwari@company.com");
+user.setRole("QA Lead");
+
+given()
+    .baseUri("https://api.example.com")
+    .contentType(ContentType.JSON)
+    .pathParam("id", 101)
+    .body(user)
+.when()
+    .put("/users/{id}")
+.then()
+    .statusCode(200)
+    .body("role", equalTo("QA Lead"));
+
+
+✔ Clean
+✔ Maintainable
+✔ Schema-friendly
+
+🔐 PUT with Authentication (Preemptive Basic)
+given()
+    .baseUri("https://api.example.com")
+    .auth()
+    .preemptive()
+    .basic("user", "password")
+    .contentType(ContentType.JSON)
+    .pathParam("id", 101)
+    .body(user)
+.when()
+    .put("/users/{id}")
+.then()
+    .statusCode(200);
+
+🧪 Validation Best Practices for PUT
+
+✔ Status Code
+✔ Response body reflects update
+✔ Fields not in request are preserved or removed (API contract)
+✔ Idempotency (same PUT twice → same result)
+
+.then()
+    .body("id", equalTo(101))
+    .body("updatedAt", notNullValue());
+
+🆚 PUT vs PATCH (Interview Favorite)
+Aspect	PUT	PATCH
+Update type	Full update	Partial update
+Missing fields	Overwritten	Preserved
+Idempotent	✅	❌ (usually)
+🧠 One-Line Interview Answer
+
+PUT is used to fully update an existing resource and is idempotent, meaning repeated requests produce the same result.

@@ -1,0 +1,401 @@
+How to Test API Gateways Using Rest Assured (Java)
+1️⃣ What You Are Actually Testing in an API Gateway
+
+You are NOT testing business logic — you are testing cross-cutting concerns.
+
+Key Responsibilities to Validate
+
+	Authentication & Authorization
+	Routing
+	Rate Limiting & Throttling
+	Request / Response Transformation
+	Header Propagation
+	Aggregation
+	Error Handling
+	Resilience (timeouts, fallbacks)
+	Versioning
+	Security (CORS, IP blocking)
+
+2️⃣ Test Setup (Base Class)
+
+public class BaseGatewayTest {
+
+				@BeforeClass
+				public void setup() {
+					RestAssured.baseURI = "https://api.mycompany.com";
+				}
+			}
+
+3️⃣ Authentication & Authorization Testing 🔐
+			✅ Valid Token
+			given()
+			  .header("Authorization", "Bearer validToken")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(200);
+
+			❌ Missing Token
+			given()
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(401);
+
+			❌ Invalid Scope / Role
+			given()
+			  .header("Authorization", "Bearer userToken")
+			.when()
+			  .delete("/api/orders/123")
+			.then()
+			  .statusCode(403);
+
+
+		✔️ Gateway responsibility → Access control
+		✔️ Backend should never receive invalid requests
+
+4️⃣ Routing Validation 🚦
+			Ensure Correct Service is Hit
+			given()
+			  .header("Authorization", "Bearer token")
+			.when()
+			  .get("/api/users/10")
+			.then()
+			  .statusCode(200)
+			  .body("service", equalTo("USER-SERVICE"));
+
+
+		Backend may return a service identifier header or response field.
+
+5️⃣ Rate Limiting / Throttling 🚥
+
+			Example: 5 Requests Per Minute
+			for (int i = 1; i <= 6; i++) {
+				given()
+				  .header("Authorization", "Bearer token")
+				.when()
+				  .get("/api/products")
+				.then()
+				  .statusCode(i <= 5 ? 200 : 429);
+			}
+
+			Validate Rate Limit Headers
+			.then()
+			  .header("X-RateLimit-Remaining", notNullValue());
+
+6️⃣ Header Propagation Testing 📤
+			Gateway Adds Headers
+			
+			given()
+			  .header("Authorization", "Bearer token")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .header("X-Correlation-ID", notNullValue());
+
+Custom Headers Forwarded
+			given()
+			  .header("X-Client-Id", "mobile-app")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(200);
+
+7️⃣ Request Transformation Testing 🔄
+
+Client Sends One Format → Backend Receives Another
+			given()
+			  .contentType(ContentType.JSON)
+			  .body("{ \"userId\": 10 }")
+			.when()
+			  .post("/api/createUser")
+			.then()
+			  .statusCode(201);
+
+
+✔️ Validate transformed response structure
+✔️ Validate required fields exist
+
+8️⃣ Response Transformation Testing
+			.then()
+			  .body("data.userId", notNullValue())
+			  .body("meta.timestamp", notNullValue());
+
+
+Gateway often wraps backend response into a standard envelope.
+
+9️⃣ API Aggregation Testing 🧩
+		Single API → Multiple Services
+		given()
+		  .header("Authorization", "Bearer token")
+		.when()
+		  .get("/api/dashboard")
+		.then()
+		  .statusCode(200)
+		  .body("orders", notNullValue())
+		  .body("payments", notNullValue())
+		  .body("products", notNullValue());
+
+Partial Failure Handling
+		.then()
+		  .body("payments", nullValue())
+		  .body("errors[0].service", equalTo("PAYMENT-SERVICE"));
+
+🔟 Timeout & Circuit Breaker Testing ⏱️
+Simulate Backend Timeout
+		given()
+		.when()
+		  .get("/api/slow-service")
+		.then()
+		  .statusCode(504);
+
+Fallback Response
+		.then()
+		  .body("message", equalTo("Service temporarily unavailable"));
+
+1️⃣1️⃣ Error Mapping Validation 🛑
+Backend Error	Gateway Response
+500	502 / 503
+404	404
+		Timeout	504
+		.then()
+		  .statusCode(503)
+		  .body("errorCode", equalTo("SERVICE_UNAVAILABLE"));
+
+1️⃣2️⃣ API Versioning Testing 🧬
+		Path Versioning
+		.get("/v1/api/orders")
+		.get("/v2/api/orders")
+
+		Header Versioning
+		given()
+		  .header("API-Version", "2")
+		.when()
+		  .get("/api/orders")
+		.then()
+		  .statusCode(200);
+
+1️⃣3️⃣ CORS Testing 🌐
+given()
+  .header("Origin", "https://evil.com")
+.when()
+  .options("/api/orders")
+.then()
+  .statusCode(403);
+
+1️⃣4️⃣ Contract Validation (Schema)
+.then()
+  .body(matchesJsonSchemaInClasspath("gateway-response-schema.json"));
+
+1️⃣5️⃣ Logging & Traceability Validation
+Response response =
+given()
+  .header("Authorization", "Bearer token")
+.when()
+  .get("/api/orders");
+
+String traceId = response.getHeader("X-Trace-Id");
+assertNotNull(traceId);
+
+1️⃣6️⃣ Negative Testing (Must Ask in Interview)
+
+Invalid headers
+Missing mandatory params
+Oversized payload
+SQL / XSS attempts
+Unsupported HTTP methods
+
+.when()
+  .patch("/api/orders")
+.then()
+  .statusCode(405);
+
+1️⃣7️⃣ How to Explain This in Interview (Perfect Answer)
+
+API Gateway testing focuses on validating cross-cutting concerns like authentication, routing, rate limiting, request/response transformation, aggregation, and error handling. Using Rest Assured, I test both positive and negative scenarios, validate headers, throttling behavior, fallback responses, and ensure backend services are protected from invalid requests.
+
+1️⃣8️⃣ What Interviewers LOVE to Hear ❤️
+
+✔ “Gateway should block before backend”
+✔ “Focus on headers and status codes”
+✔ “Rate limiting and security”
+✔ “Aggregation and fallback handling”
+
+1️⃣9️⃣ Common Mistake ❌
+
+Testing business logic at gateway level
+
+✔️ Business logic → service tests
+✔️ Cross-cutting concerns → gateway tests
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+What Does “Threshold” Mean in SonarQube?
+
+A threshold defines:
+When a rule should raise an issue
+How severe that issue is
+When it should fail the Quality Gate
+
+Bad thresholds = noisy Sonar → ignored by teams
+Good thresholds = trusted Sonar → enforced in CI
+
+🧠 Rule Threshold Strategy (Selenium Automation)
+1️⃣ Thread.sleep() Usage
+🔴 Rule
+
+AvoidThreadSleepInTests
+
+🎯 Threshold
+Metric				Value
+Allowed				0 occurrences
+Severity			Major
+Quality Gate		❌ Fail if ≥ 1
+💡 Why?
+
+Even one Thread.sleep() is harmful
+No legitimate use in automation frameworks
+
+📌 Hard stop rule
+
+2️⃣ Direct driver.findElement() Outside Pages
+🔴 Rule
+
+NoFindElementOutsidePageObject
+
+🎯 Threshold  --
+Metric					Value
+Allowed					0 in steps, tests
+Severity				Major
+Gate					❌ Fail if ≥ 1
+
+📌 Exception:
+Allowed inside pages.* only
+
+
+
+3️⃣ Static WebDriver Declaration
+🔴 Rule
+
+NoStaticWebDriver
+
+🎯 Threshold
+Metric					Value
+Allowed					0
+Severity				Critical
+Gate					❌ Immediate fail
+
+💥 Parallel execution killer
+
+4️⃣ Assertions Inside Page Objects
+🔴 Rule
+
+NoAssertionsInPageObjects
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Major
+Gate				❌ Fail
+
+💡 Pages must never assert — strict rule
+
+5️⃣ Page Object Size (SRP Violation)
+🔴 Rule
+
+SinglePageResponsibility
+
+🎯 Threshold
+Metric				Recommended
+Max methods			10–12
+Max fields			10
+Severity			Major
+Gate				⚠ Warn only (initially)
+
+💡 Why not fail?
+
+Legacy pages may be large
+Start as Code Smell, then enforce later
+
+6️⃣ Missing Wait Strategy Before Action
+🔴 Rule
+
+EnforceWaitStrategy
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Critical
+Gate				❌ Fail
+
+💡 Any click/type without wait is dangerous
+
+7️⃣ Hard-Coded Test Data in Page Objects
+🔴 Rule
+
+NoHardcodedTestDataInPages
+
+🎯 Threshold
+Metric				Value
+Allowed				≤ 1 (temporary)
+Severity			Minor → Major
+Gate				⚠ Warn
+
+💡 Useful during framework evolution
+
+8️⃣ Step Definitions Using WebDriver Directly
+🔴 Rule
+
+StepDefsShouldUsePagesOnly
+
+🎯 Threshold
+Metric			Value
+Allowed			0
+Severity		Major
+Gate			❌ Fail
+
+📌 Step defs = orchestration only
+
+9️⃣ Fluent / Explicit Wait Max Timeout
+🔴 Rule
+
+MaxWaitTimeout
+
+🎯 Threshold
+Metric			Value
+Max wait		20 seconds
+Severity		Minor
+Gate			⚠ Warn
+
+💡 Excessive waits hide performance issues
+
+📊 Summary Table (Interview Ready)
+Rule							Threshold	Severity	Gate
+Thread.sleep					0			Major		Fail
+Static WebDriver				0			Critical	Fail
+findElement outside POM			0			Major		Fail
+Assertions in Pages				0			Major		Fail
+Missing wait strategy			0			Critical	Fail
+Page size (methods)				>12			Major		Warn
+Hard-coded data					>1			Minor		Warn
+Max wait time					>20s		Minor		Warn
+
+
+🎯 Quality Gate Recommendation (Automation)
+
+FAIL BUILD if:
+
+Any Critical issue
+
+≥1 Major bug
+
+Code coverage < 60% (automation code)
+
+WARN only if:
+
+Code smells
+
+Maintainability issues

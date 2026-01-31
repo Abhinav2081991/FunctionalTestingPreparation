@@ -1,0 +1,539 @@
+Different Types of Java Test Runners in Cucumber
+
+In Java, Cucumber itself does NOT execute tests.
+It relies on test execution frameworks (runners).
+
+1️⃣ JUnit Runner (Most Common – Legacy & Stable)
+📌 When to Use
+
+✔ Existing JUnit-based projects
+✔ Simple Cucumber execution
+✔ Widely supported in CI tools
+
+✅ Runner Class
+import org.junit.runner.RunWith;
+import io.cucumber.junit.Cucumber;
+import io.cucumber.junit.CucumberOptions;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+        features = "src/test/resources/features",
+        glue = "stepDefinitions",
+        plugin = {"pretty", "html:target/cucumber-report.html"},
+        tags = "@smoke"
+)
+public class TestRunner {
+}
+
+🔥 Pros
+
+Simple
+
+Mature
+
+Huge community
+
+⚠️ Cons
+
+Limited parallel execution
+
+JUnit 4 is aging
+
+2️⃣ JUnit 5 (Cucumber + JUnit Platform Engine)
+📌 When to Use
+
+✔ Modern frameworks
+✔ Better IDE support
+✔ Flexible execution
+
+✅ Configuration (No Runner Class Needed)
+pom.xml
+<dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-junit-platform-engine</artifactId>
+    <version>7.x.x</version>
+</dependency>
+
+junit-platform.properties
+cucumber.features=src/test/resources/features
+cucumber.glue=stepDefinitions
+cucumber.plugin=pretty, html:target/cucumber.html
+cucumber.filter.tags=@regression
+
+🔥 Pros
+
+Cleaner setup
+
+Works well with IDEs
+
+Platform-based execution
+
+⚠️ Cons
+
+Slight learning curve
+
+Less legacy support
+
+3️⃣ TestNG Runner (Most Powerful for Enterprise)
+📌 When to Use
+
+✔ Parallel execution
+✔ Data-driven execution
+✔ Advanced CI/CD control
+
+✅ Runner Class
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+import io.cucumber.testng.CucumberOptions;
+
+@CucumberOptions(
+        features = "src/test/resources/features",
+        glue = "stepDefinitions",
+        plugin = {"pretty", "json:target/cucumber.json"},
+        tags = "@regression"
+)
+public class TestRunnerTestNG extends AbstractTestNGCucumberTests {
+
+    @Override
+    @DataProvider(parallel = true)
+    public Object[][] scenarios() {
+        return super.scenarios();
+    }
+}
+
+🔥 Pros
+
+Parallel execution
+
+Better reporting
+
+Flexible configuration
+
+⚠️ Cons
+
+Slightly more setup
+
+Overkill for small projects
+
+4️⃣ Cucumber CLI Runner (CI / Jenkins Friendly)
+📌 When to Use
+
+✔ Jenkins pipelines
+✔ Dockerized execution
+✔ Headless execution
+
+✅ Command Line
+mvn test \
+ -Dcucumber.filter.tags="@smoke" \
+ -Dcucumber.features=src/test/resources/features
+
+🔥 Pros
+
+CI-friendly
+
+No runner class needed
+
+⚠️ Cons
+
+Less IDE interaction
+
+5️⃣ Custom Runner (Enterprise Frameworks)
+📌 When to Use
+
+✔ Multi-module frameworks
+✔ UI + API + DB in one run
+✔ Environment-based execution
+
+Example
+public class CustomCucumberRunner {
+
+    public static void main(String[] args) {
+        System.setProperty("cucumber.filter.tags", "@smoke");
+        io.cucumber.core.cli.Main.run(args, Thread.currentThread().getContextClassLoader());
+    }
+}
+
+🔥 Pros
+
+Full control
+
+Highly extensible
+
+⚠️ Cons
+
+Maintenance overhead
+
+🧠 Runner Selection Cheat Sheet
+Requirement	Best Runner
+Simple execution	JUnit 4
+Modern Java stack	JUnit 5
+Parallel execution	TestNG
+Jenkins / Docker	CLI
+Enterprise control	Custom
+🎯 Interview-Perfect Answer (Short)
+
+“Cucumber in Java can be executed using JUnit, TestNG, JUnit 5 platform engine, CLI, or custom runners. I prefer TestNG when parallel execution is needed, and JUnit 5 for modern lightweight setups. In CI pipelines, we often rely on CLI execution.”
+
+🏁 Senior Takeaway
+
+Runner choice defines scalability — not just execution.
+
+
+-----------------------------------------------------------------------------------
+
+
+
+CI Commands to trigger tests from in Cucumber - 
+
+mvn test -Dcucumber.filter.tags="@smoke"
+mvn test -Dcucumber.filter.tags="@smoke and @ui"
+mvn test -Dcucumber.filter.tags="@regression and not @wip"
+
+
+Triggering Different Cucumber Tests in CI (Senior-Level Guide)
+🎯 Goal
+
+Run different subsets of Cucumber tests (smoke, regression, sanity, UI, API, env-specific) without changing code.
+
+1️⃣ Using Cucumber Tags (MOST COMMON)
+🔹 Feature / Scenario Tags
+@smoke @ui
+Scenario: Login validation
+
+🔹 CI Command
+mvn test -Dcucumber.filter.tags="@smoke"
+
+🔹 Multiple Tags
+mvn test -Dcucumber.filter.tags="@smoke and @ui"
+mvn test -Dcucumber.filter.tags="@regression and not @wip"
+
+✅ Best For
+
+✔ Smoke vs regression
+✔ UI vs API separation
+✔ Nightly vs PR builds
+
+2️⃣ Using Maven Profiles (Environment-Based Runs)
+🔹 pom.xml
+<profiles>
+    <profile>
+        <id>smoke</id>
+        <properties>
+            <cucumber.tags>@smoke</cucumber.tags>
+        </properties>
+    </profile>
+
+    <profile>
+        <id>regression</id>
+        <properties>
+            <cucumber.tags>@regression</cucumber.tags>
+        </properties>
+    </profile>
+</profiles>
+
+🔹 Cucumber Options
+@CucumberOptions(
+    tags = "${cucumber.tags}"
+)
+
+🔹 CI Command
+mvn test -Psmoke
+mvn test -Pregression
+
+✅ Best For
+
+✔ Clean pipelines
+✔ Easy Jenkins configuration
+
+3️⃣ Using JUnit Platform Properties (JUnit 5)
+🔹 junit-platform.properties
+cucumber.filter.tags=@smoke
+
+🔹 Override in CI
+mvn test -Dcucumber.filter.tags="@regression"
+
+✅ Best For
+
+✔ JUnit 5 users
+✔ Central config management
+
+4️⃣ Using Feature Path Selection
+🔹 Directory Structure
+features/
+ ├── ui/
+ ├── api/
+ └── db/
+
+🔹 CI Command
+mvn test -Dcucumber.features=src/test/resources/features/ui
+
+✅ Best For
+
+✔ Clear separation
+✔ Large frameworks
+
+5️⃣ Using TestNG Runner Classes
+🔹 Separate Runners
+@CucumberOptions(tags = "@smoke")
+public class SmokeRunner extends AbstractTestNGCucumberTests {}
+
+@CucumberOptions(tags = "@regression")
+public class RegressionRunner extends AbstractTestNGCucumberTests {}
+
+🔹 CI Command
+mvn test -Dtest=SmokeRunner
+mvn test -Dtest=RegressionRunner
+
+✅ Best For
+
+✔ Explicit control
+✔ Legacy TestNG setups
+
+6️⃣ Jenkins Pipeline (Real-World Example)
+🔹 Jenkinsfile
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'TEST_TYPE', choices: ['smoke', 'regression'], description: 'Test suite')
+        choice(name: 'BROWSER', choices: ['chrome', 'edge'])
+    }
+
+    stages {
+        stage('Run Tests') {
+            steps {
+                sh """
+                mvn test \
+                -Dcucumber.filter.tags=@${TEST_TYPE} \
+                -Dbrowser=${BROWSER}
+                """
+            }
+        }
+    }
+}
+
+🔥 Result
+
+One pipeline
+
+Multiple test sets
+
+Zero code changes
+
+7️⃣ Triggering by Environment (DEV / QA / PROD)
+🔹 Command
+mvn test -Denvironment=qa -Dcucumber.filter.tags="@smoke"
+
+🔹 Usage in Code
+String env = System.getProperty("environment", "dev");
+
+8️⃣ Nightly vs PR Execution Strategy
+Pipeline	Trigger
+PR build	@smoke
+Merge build	@sanity
+Nightly	@regression
+Release	@e2e
+🎯 Interview-Perfect Answer (60 sec)
+
+“In CI, we trigger different Cucumber test sets using tags, Maven profiles, or runner selection. Most commonly, we use tags passed via system properties so Jenkins can control execution without code changes. This allows us to run smoke tests on PRs, regression nightly, and full suites before release.”
+
+🧠 One-Line Memory Hook
+
+CI should control test execution — not developers.
+
+🏁 Senior Takeaway
+
+A mature QA pipeline:
+
+Uses tags
+
+Uses profiles
+
+Avoids hardcoding
+
+Is parameter-driven
+
+
+------------------------------------------------------------------------------------------------------------------------------
+
+
+Make sure to add the properties of the commands under properties section  and configuration inside maven-surefire-plugin section in order to run these commands - 
+
+for Ex - Command - mvn test -Dbrowser=CHROME -Dexecution=LOCAL -Dcucumberfiltertags="@Datatable1"
+
+Sure Fire Plugin - 
+				<plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                    <configuration>
+                        <parallel>methods</parallel>
+                        <threadCount>2</threadCount>
+                        <testFailureIgnore>true</testFailureIgnore>
+                        <systemPropertyVariables>
+                            <cucumberfiltertags>${cucumber.filter.tags}</cucumberfiltertags>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+				
+ Properties - 
+ 
+ <cucumber.filter.tags>@Datatable</cucumber.filter.tags>
+ 
+ Then the commands will start working, similarly do it for feature files as well.
+ 
+ 
+ 
+ ------------------------
+ 
+ Basic Maven Commands
+🔹 Run all Cucumber tests
+mvn test
+
+
+or (recommended for CI):
+
+mvn verify
+
+✅ 2️⃣ Run Cucumber with TAGS (MOST USED)
+✔ Cucumber 5+ / 6 / 7 / 8 (Modern)
+mvn test -Dcucumber.filter.tags="@Smoke"
+
+✔ Multiple tags
+-Dcucumber.filter.tags="@Smoke and @Regression"
+
+-Dcucumber.filter.tags="@Smoke or @Sanity"
+
+-Dcucumber.filter.tags="not @WIP"
+
+✔ Older Cucumber (≤ 4.x)
+mvn test -Dcucumber.options="--tags @Smoke"
+
+✅ 3️⃣ Run Specific Feature File
+mvn test -Dcucumber.features=src/test/resources/features/login.feature
+
+
+Multiple features:
+
+-Dcucumber.features="features/login.feature,features/search.feature"
+
+✅ 4️⃣ Run Specific Scenario (By Line Number)
+mvn test -Dcucumber.features=src/test/resources/features/login.feature:12
+
+
+👉 Runs the scenario at line 12
+
+✅ 5️⃣ Run with Specific Glue (Step Definitions)
+mvn test -Dcucumber.glue=stepdefinitions
+
+
+Multiple glue packages:
+
+-Dcucumber.glue=steps,hooks
+
+✅ 6️⃣ Control Output / Plugins from Maven
+JSON report
+-Dcucumber.plugin="json:target/cucumber.json"
+
+HTML + Pretty
+-Dcucumber.plugin="pretty,html:target/cucumber-html"
+
+✅ 7️⃣ Dry Run (Check Step Definitions Only)
+mvn test -Dcucumber.execution.dry-run=true
+
+
+✔ Validates mapping
+❌ Does not execute tests
+
+✅ 8️⃣ Fail Fast (Stop on First Failure)
+mvn test -Dcucumber.execution.fail-fast=true
+
+✅ 9️⃣ Parallel Execution (CLI Controlled)
+-Dcucumber.execution.parallel.enabled=true
+
+-Dcucumber.execution.parallel.config.strategy=fixed
+
+-Dcucumber.execution.parallel.config.fixed.parallelism=4
+
+
+Full example:
+
+mvn test ^
+ -Dcucumber.execution.parallel.enabled=true ^
+ -Dcucumber.execution.parallel.config.strategy=fixed ^
+ -Dcucumber.execution.parallel.config.fixed.parallelism=4
+
+✅ 🔟 Filter by Scenario Name
+-Dcucumber.filter.name="Login"
+
+
+Regex supported:
+
+-Dcucumber.filter.name=".*Payment.*"
+
+✅ 1️⃣1️⃣ Run with Environment Variables (CI Friendly)
+mvn test ^
+ -Dbrowser=CHROME ^
+ -Dexecution=GRID ^
+ -DgridUrl=http://localhost:4444/wd/hub
+
+✅ 1️⃣2️⃣ Combine Cucumber + Selenium + Sonar
+mvn clean verify sonar:sonar ^
+ -Dbrowser=EDGE ^
+ -Dexecution=LOCAL ^
+ -Dcucumber.filter.tags="@Regression" ^
+ -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+✅ 1️⃣3️⃣ Run Using Maven Profiles (Advanced)
+mvn test -Psmoke
+
+
+Profile example:
+
+<profile>
+  <id>smoke</id>
+  <properties>
+    <cucumber.filter.tags>@Smoke</cucumber.filter.tags>
+  </properties>
+</profile>
+
+✅ 1️⃣4️⃣ Run Only a Specific TestRunner
+mvn test -Dtest=TestRunner
+
+
+or
+
+mvn verify -Dit.test=TestRunner
+
+✅ 1️⃣5️⃣ Skip Cucumber Tests (Sometimes Needed)
+mvn test -DskipTests
+
+
+or
+
+-Dmaven.test.skip=true
+
+🚨 Commands That Do NOT Work (Common Mistakes)
+
+❌ -Dcucumberfiltertags
+❌ -Dtags=@Smoke
+❌ -DcucumberTags=@Smoke
+❌ Hardcoded tags in @CucumberOptions (breaks CI flexibility)
+
+🧠 Interview One-Liner
+
+“Cucumber supports extensive Maven-driven execution via system properties, allowing dynamic control over tags, features, parallelism, plugins, and environments — making it CI/CD friendly.”
+
+📌 Quick Reference (Bookmark This)
+Purpose	Command
+Run by tag	-Dcucumber.filter.tags="@Smoke"
+Run by feature	-Dcucumber.features=path
+Dry run	-Dcucumber.execution.dry-run=true
+Parallel	-Dcucumber.execution.parallel.enabled=true
+Fail fast	-Dcucumber.execution.fail-fast=true
+Scenario name	-Dcucumber.filter.name="Login"
+
+If you want next:
+🔥 Real Jenkins pipelines using these commands
+🔥 Tag strategy for enterprise projects
+🔥 Parallel + Grid + Cucumber
+🔥 Cucumber with API + UI combined

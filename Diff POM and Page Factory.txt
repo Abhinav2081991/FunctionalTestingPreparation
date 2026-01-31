@@ -1,0 +1,144 @@
+Difference Between POM and Page Factory Pattern (Selenium)
+1️⃣ What is Page Object Model (POM)?
+Definition
+
+Page Object Model is a design pattern where each web page of the application is represented as a separate Java class, and all the page elements and actions are defined inside that class.
+
+👉 POM is a design concept, not a Selenium feature.
+
+Example – POM (Without PageFactory)
+public class LoginPage {
+
+    WebDriver driver;
+
+    By username = By.id("username");
+    By password = By.id("password");
+    By loginBtn = By.id("login");
+
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    public void login(String user, String pass) {
+        driver.findElement(username).sendKeys(user);
+        driver.findElement(password).sendKeys(pass);
+        driver.findElement(loginBtn).click();
+    }
+}
+
+
+✔ Clean separation
+✔ Better maintainability
+✔ Uses By locators
+
+2️⃣ What is Page Factory?
+Definition
+Page Factory is a Selenium support library that implements POM internally and provides:
+Lazy element initialization
+@FindBy annotations
+Cleaner syntax
+
+👉 Page Factory is a Selenium implementation of POM
+
+Example – Page Factory
+public class LoginPage {
+
+    WebDriver driver;
+
+    @FindBy(id = "username")
+    WebElement username;
+
+    @FindBy(id = "password")
+    WebElement password;
+
+    @FindBy(id = "login")
+    WebElement loginBtn;
+
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
+        PageFactory.initElements(driver, this);
+    }
+
+    public void login(String user, String pass) {
+        username.sendKeys(user);
+        password.sendKeys(pass);
+        loginBtn.click();
+    }
+}
+
+
+✔ Less boilerplate
+✔ Lazy loading
+✔ Readable code
+
+3️⃣ Key Differences (Most Important Part)
+Aspect							POM							Page Factory
+Type							Design Pattern				Selenium library
+Dependency						Selenium independent		Selenium dependent
+Element Definition				By locators					@FindBy annotations
+Initialization					Manual						Automatic (initElements)
+Element Loading					Eager						Lazy
+Readability						Moderate					High
+Performance						Slightly slower				Better (lazy loading)
+Maintenance						Easy						Easier
+
+
+4️⃣ Element Initialization Difference (Interview Trick)
+POM
+driver.findElement(locator)
+Element is located every time
+No caching
+
+
+Page Factory
+@FindBy(id="login")
+WebElement login;
+
+Element initialized only when used
+Uses proxy pattern internally
+
+📌 Keyword: Lazy Initialization
+
+5️⃣ Which One Should You Use?
+
+Use POM (Without PageFactory) when:
+	You want full control over element handling
+	Handling highly dynamic elements
+	Avoid stale element issues
+	Framework-level abstraction
+
+Use Page Factory when:
+	Application UI is stable
+	Want cleaner, readable code
+	Faster development
+	Smaller projects
+
+6️⃣ Common Interview Follow-up
+❓ Is Page Factory a replacement for POM?
+👉 NO
+Correct answer:
+Page Factory is a Selenium-supported way of implementing POM.
+
+
+
+7️⃣ Real-World Framework Choice (Senior-Level)
+
+👉 Modern frameworks often combine both:
+
+POM structure
+
+Explicit waits
+Limited PageFactory usage
+
+Example:
+
+@FindBy(id="login")
+WebElement loginBtn;
+
+public void clickLogin() {
+    wait.until(ExpectedConditions.elementToBeClickable(loginBtn)).click();
+}
+
+🎤 Interview-Ready 30-Second Answer
+
+“Page Object Model is a design pattern that separates page logic from test logic, while Page Factory is a Selenium library that implements POM using annotations and lazy initialization. POM is concept-level, whereas Page Factory is tool-level. Page Factory reduces boilerplate code and improves readability but depends on Selenium.”

@@ -1,0 +1,147 @@
+✅ Declarative Parallel Pipeline (Recommended)
+pipeline {
+    agent {
+        label 'AGENT'
+    }
+
+    stages {
+
+        stage('Checkout from Git') {
+            steps {
+                git 'https://github.com/Abhinav2081991/SOLIDFramework.git'
+            }
+        }
+
+        stage('Parallel Test Execution') {
+            parallel {
+
+                stage('Chrome Tests') {
+                    steps {
+                        bat 'mvn clean test -Dbrowser=chrome'
+                    }
+                }
+
+                stage('Edge Tests') {
+                    steps {
+                        bat 'mvn clean test -Dbrowser=edge'
+                    }
+                }
+
+                stage('Firefox Tests') {
+                    steps {
+                        bat 'mvn clean test -Dbrowser=firefox'
+                    }
+                }
+            }
+        }
+
+        stage('Sonar Analysis') {
+            steps {
+                withSonarQubeEnv('SONAR1') {
+                    bat 'mvn sonar:sonar'
+                }
+            }
+            post {
+                always {
+                    cucumber buildStatus: 'UNCHANGED',
+                             fileIncludePattern: '**/*.json',
+                             reportTitle: 'Cucumber Parallel Reports'
+                }
+                success {
+                    echo 'Sonar + Tests successful'
+                }
+                failure {
+                    echo 'Sonar or Tests failed'
+                }
+            }
+        }
+    }
+}
+
+3️⃣ Why Sonar Is NOT Inside Parallel (Interview Point)
+
+❌ Wrong:
+
+parallel {
+    stage('Chrome + Sonar') { ... }
+    stage('Edge + Sonar') { ... }
+}
+
+
+✔ Correct reasoning:
+
+SonarQube:
+
+Aggregates metrics
+
+Uses project key
+
+Expects one analysis per pipeline
+
+Parallel Sonar = race conditions + rejected analysis
+
+📌 Interview line:
+
+“SonarQube analysis must be serialized even if test execution is parallelized.”
+
+4️⃣ Parallel Execution on Different Agents (Advanced)
+
+If you want true infra-level parallelism:
+
+stage('Parallel Test Execution') {
+    parallel {
+
+        stage('Chrome') {
+            agent { label 'WINDOWS_AGENT' }
+            steps {
+                bat 'mvn test -Dbrowser=chrome'
+            }
+        }
+
+        stage('Edge') {
+            agent { label 'EDGE_AGENT' }
+            steps {
+                bat 'mvn test -Dbrowser=edge'
+            }
+        }
+
+        stage('Firefox') {
+            agent { label 'LINUX_AGENT' }
+            steps {
+                sh 'mvn test -Dbrowser=firefox'
+            }
+        }
+    }
+}
+
+
+✔ Scales horizontally
+✔ Faster feedback
+✔ Enterprise-grade setup
+
+5️⃣ Handling Test Failures in Parallel (Important)
+
+By default:
+
+If one parallel branch fails → stage fails
+
+To allow all branches to run:
+
+stage('Chrome Tests') {
+    steps {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            bat 'mvn test -Dbrowser=chrome'
+        }
+    }
+}
+
+6️⃣ Common Mistakes (Very Important)
+
+❌ Running mvn clean in each parallel stage
+✔ Clean once, test many times
+
+❌ Sharing same report directory
+✔ Use browser-specific output folders
+
+❌ Sonar in parallel
+✔ Always single-threaded

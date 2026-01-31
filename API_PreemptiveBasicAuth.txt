@@ -1,0 +1,115 @@
+What is Basic Authentication (quick recap)
+
+In Basic Auth, the client sends:
+
+Authorization: Basic Base64(username:password)
+
+
+But how and when this header is sent matters.
+
+⚠️ Normal (Non-Preemptive) Basic Auth
+
+Default behavior (HTTP standard):
+
+Client sends request without credentials
+
+Server responds with 401 Unauthorized
+
+Client retries request with Authorization header
+
+🔁 Extra round trip → slower, noisy logs, flaky in CI sometimes
+
+✅ What is Preemptive Basic Authorization?
+
+Preemptive Basic Auth means:
+
+👉 Client sends credentials in the very first request,
+👉 without waiting for a 401 challenge from the server.
+
+✔ Faster
+✔ No extra HTTP call
+✔ Cleaner CI runs
+✔ Works with strict gateways / proxies
+
+🔑 Preemptive Basic Auth in Rest Assured
+📌 Syntax
+given()
+    .auth()
+    .preemptive()
+    .basic("username", "password")
+.when()
+    .get("/secure-endpoint")
+.then()
+    .statusCode(200);
+
+🧠 What happens internally?
+
+Rest Assured:
+
+Encodes username:password in Base64
+
+Adds Authorization header before sending request
+
+No 401 challenge needed.
+
+🧪 Real-World Example (API Testing)
+Scenario
+
+An internal service:
+
+Does not send WWW-Authenticate header
+
+Expects credentials immediately
+
+❌ Normal auth → fails
+✅ Preemptive auth → works
+
+given()
+    .baseUri("https://api.company.com")
+    .auth()
+    .preemptive()
+    .basic("qa_user", "qa_password")
+.when()
+    .get("/v1/accounts")
+.then()
+    .statusCode(200);
+
+🆚 Preemptive vs Non-Preemptive (Interview Gold)
+Aspect	Non-Preemptive	Preemptive
+First request	No auth header	Auth header sent
+Extra HTTP call	Yes (401 → retry)	❌ No
+Performance	Slower	Faster
+CI friendliness	⚠️ Sometimes flaky	✅ Stable
+Security	Same (Base64)	Same
+⚠️ Security Note (Important)
+
+Basic Auth is not encryption
+
+Base64 ≠ secure
+
+Always use HTTPS
+
+Avoid hardcoding credentials
+
+🔐 Externalize Credentials (Best Practice)
+String user = System.getenv("API_USER");
+String pass = System.getenv("API_PASS");
+
+given()
+    .auth()
+    .preemptive()
+    .basic(user, pass)
+
+🧩 When SHOULD you use Preemptive Basic Auth?
+
+✔ Internal APIs
+✔ CI/CD pipelines
+✔ APIs behind gateways
+✔ Performance-sensitive tests
+
+❌ Public APIs
+❌ When OAuth / JWT is available
+
+🧠 One-Line Interview Answer
+
+Preemptive Basic Authentication in Rest Assured sends the Authorization header in the initial request without waiting for a 401 challenge, reducing latency and avoiding extra network calls.

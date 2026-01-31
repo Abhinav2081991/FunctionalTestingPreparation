@@ -1,0 +1,151 @@
+What Is Usability Testing?
+✅ Definition
+📌 Simple Definition
+
+Usability testing evaluates how easy, efficient, and satisfying a product is for real users to accomplish their goals.
+
+📌 Professional Definition (ISO-style)
+
+Usability testing is a type of non-functional testing that assesses a system’s effectiveness, efficiency, and user satisfaction in a specified context of use.
+
+🎯 Purpose of Usability Testing
+
+Usability testing answers questions like:
+
+Can users complete tasks without confusion?
+
+Is the interface intuitive?
+
+Are error messages clear and helpful?
+
+Does the product feel natural to use?
+
+👉 It focuses on user experience, not system correctness.
+
+🧱 Core Usability Attributes
+
+Based on ISO 9241 / ISO 25010:
+
+1️⃣ Effectiveness
+
+Can users complete tasks successfully?
+
+2️⃣ Efficiency
+
+How much time and effort is required?
+
+3️⃣ Learnability
+
+How quickly can new users learn the system?
+
+4️⃣ Memorability
+
+Can returning users use it without relearning?
+
+5️⃣ Error Handling
+
+Are errors prevented or easy to recover from?
+
+6️⃣ Satisfaction
+
+Do users enjoy using it?
+
+🧪 Examples of Usability Issues
+Area	Issue
+Navigation	Users can’t find key features
+Forms	Too many mandatory fields
+Errors	Cryptic error messages
+UI	Inconsistent button placement
+Accessibility	Poor contrast, no keyboard support
+🧠 Usability Testing vs Functional Testing
+Aspect	Functional Testing	Usability Testing
+Focus	Does it work?	Is it easy to use?
+Who	QA / Automation	Real users / UX
+Nature	Objective	Subjective
+Automation	High	Low / Limited
+Outcome	Pass/Fail	Insights & improvements
+🧪 Types of Usability Testing
+1️⃣ Exploratory Usability Testing
+
+Early feedback
+
+Paper prototypes, wireframes
+
+2️⃣ Task-Based Testing
+
+Users complete defined tasks
+
+Measure success rate and time
+
+3️⃣ Moderated Usability Testing
+
+Facilitator observes and asks questions
+
+4️⃣ Unmoderated Usability Testing
+
+Users perform tasks independently
+
+Tools record behavior
+
+5️⃣ A/B Testing
+
+Compare two UI designs
+
+🧠 When to Perform Usability Testing
+Phase	Activity
+Design	Prototype testing
+Development	Iterative feedback
+Pre-release	Validation
+Post-release	Continuous improvement
+
+👉 Best usability testing happens early and continuously.
+
+🧪 Tools Used for Usability Testing
+🔹 Manual / Observation
+
+In-person sessions
+
+Screen recordings
+
+🔹 Analytics
+
+Heatmaps (Hotjar)
+
+Click tracking
+
+🔹 Accessibility Tools
+
+Axe
+
+Lighthouse
+
+🧠 Role of QA in Usability Testing (Senior View)
+
+QA contributes by:
+
+Identifying usability risks
+
+Defining usability acceptance criteria
+
+Validating accessibility standards
+
+Supporting UX with data
+
+Automating basic usability checks (limited)
+
+🚫 What Usability Testing Is NOT
+
+❌ Not just UI testing
+❌ Not pixel-perfect validation
+❌ Not only for designers
+❌ Not fully automatable
+
+🎯 Interview-Ready Explanation
+
+Usability testing evaluates how effectively, efficiently, and satisfactorily users can interact with a system. Unlike functional testing, it focuses on user experience, ease of use, and intuitiveness rather than correctness of functionality.
+
+🧠 Final Takeaway
+
+A system can be functionally correct yet unusable.
+Usability testing ensures the product actually works for humans.
+Usability testing ensures the product actually works for humans.

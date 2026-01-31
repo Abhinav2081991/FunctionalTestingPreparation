@@ -1,0 +1,189 @@
+Test Levels & Test Types (Explained Clearly)
+✅ What Are Test Levels?
+📌 Definition
+
+Test Levels describe when testing is performed in the software development lifecycle and what level of the system is being tested.
+
+They answer:
+“At which stage and scope are we testing?”
+
+🧱 Test Levels (Top → Bottom)
+1️⃣ Unit Testing
+🔹 What It Tests
+
+Individual units of code (methods, classes)
+
+In isolation
+
+🔹 Who Performs
+
+Developers (primarily)
+
+🔹 Tools
+
+JUnit, TestNG, Mockito
+
+🔹 Example
+assertEquals(5, calculator.add(2,3));
+
+2️⃣ Integration Testing
+🔹 What It Tests
+
+Interaction between integrated components
+
+APIs, DB, services
+
+🔹 Who Performs
+
+Developers / QA
+
+🔹 Example
+
+Service ↔ Database
+
+API ↔ External system
+
+3️⃣ System Testing
+🔹 What It Tests
+
+Entire application as a whole
+
+Functional & non-functional
+
+🔹 Who Performs
+
+QA team
+
+🔹 Example
+
+End-to-end login
+
+Order placement flow
+
+4️⃣ Acceptance Testing
+🔹 What It Tests
+
+Business requirements
+
+User acceptance criteria
+
+🔹 Who Performs
+
+Business users / PO / QA
+
+🔹 Example
+
+UAT
+
+Alpha / Beta testing
+
+🧠 Test Levels Summary Table
+Level	Scope	Focus
+Unit	Smallest	Code correctness
+Integration	Interfaces	Data flow
+System	Full system	Behavior
+Acceptance	Business	Fit for use
+✅ What Are Test Types?
+📌 Definition
+
+Test Types describe what kind of testing is performed to evaluate specific quality characteristics.
+
+They answer:
+“What are we testing for?”
+
+🔹 Functional Test Types
+✔ Functional Testing
+
+Features work as expected
+
+✔ Smoke Testing
+
+Build stability check
+
+✔ Regression Testing
+
+Existing features still work
+
+✔ Sanity Testing
+
+Quick validation of fixes
+
+🔹 Non-Functional Test Types
+⚡ Performance Testing
+
+Load, stress, scalability
+
+🔐 Security Testing
+
+Vulnerabilities, auth, data protection
+
+♿ Usability Testing
+
+User experience
+
+🌍 Compatibility Testing
+
+Browsers, OS, devices
+
+🌐 Localization / Internationalization
+
+Language, locale, formats
+
+🔄 Reliability & Recovery
+
+Failover, stability
+
+🔹 Structural Test Types
+🧠 White Box Testing
+
+Code-based
+
+Paths, conditions
+
+🧪 Black Box Testing
+
+Behavior-based
+
+No code knowledge
+
+🧩 Gray Box Testing
+
+Partial internal knowledge
+
+🧪 Other Important Test Types
+
+Exploratory Testing
+
+Accessibility Testing
+
+Compliance Testing
+
+API Testing
+
+Contract Testing
+
+Chaos Testing (microservices)
+
+🔍 Test Levels vs Test Types (Key Difference)
+Aspect	Test Levels	Test Types
+Focus	When & where	What
+Based On	SDLC stage	Quality attributes
+Examples	Unit, Integration	Performance, Security
+Dependency	Hierarchical	Orthogonal
+
+👉 Test types can be applied at any test level.
+
+🧠 Real-World Example
+Login Feature
+Level	Type
+Unit	Functional
+Integration	API
+System	UI regression
+Acceptance	UAT
+🎯 Interview-Ready Answer
+
+Test levels define the stage and scope of testing such as unit, integration, system, and acceptance, while test types define the purpose of testing like functional, performance, security, and usability. Test types can be executed at multiple test levels depending on risk and objectives.
+
+🧠 Senior QA Insight
+
+Mature teams align test levels with the test pyramid and choose test types based on risk, not habit.

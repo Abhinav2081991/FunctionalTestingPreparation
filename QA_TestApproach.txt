@@ -1,0 +1,161 @@
+What Is Test Approach?
+✅ Simple Definition
+
+Test Approach defines how testing will be performed to meet quality objectives within given constraints.
+
+If Test Strategy answers “what & why”,
+👉 Test Approach answers “how”.
+
+🎯 Purpose of Test Approach
+
+The test approach explains:
+
+How testing is structured
+
+How risks are mitigated
+
+How different test types are executed
+
+How tools, environments, and people are used
+
+It guides day-to-day testing execution.
+
+🧱 What Does a Test Approach Typically Include?
+
+A well-defined test approach covers execution-level decisions, such as:
+
+1️⃣ Testing Levels
+
+How testing is distributed across levels:
+
+Unit
+
+Integration
+
+System
+
+UAT
+
+Example:
+
+Unit tests by devs, API tests by QA, UI tests minimal and critical only.
+
+2️⃣ Testing Types
+
+Which types are applied and how:
+
+Functional
+
+Regression
+
+Smoke
+
+Performance
+
+Security
+
+Usability
+
+Localization
+
+Example:
+
+Regression automated, exploratory manual each sprint.
+
+3️⃣ Test Design Techniques
+
+How test cases are derived:
+
+Boundary Value Analysis
+
+Equivalence Partitioning
+
+Decision Tables
+
+Exploratory testing
+
+4️⃣ Risk-Based Testing
+
+How risk influences testing depth:
+
+Example:
+
+Payment flows tested exhaustively; reporting tested lightly.
+
+5️⃣ Automation Approach
+
+What is automated and where:
+
+API-first automation
+
+CI/CD execution
+
+Parallel execution strategy
+
+6️⃣ Test Environment Usage
+
+How environments are used:
+
+Dev / QA / UAT
+
+Data reset strategy
+
+Feature flags
+
+7️⃣ Defect Management
+
+How defects are:
+
+Logged
+
+Triaged
+
+Fixed
+
+Re-tested
+
+8️⃣ Entry & Exit Criteria
+
+When to start and stop testing:
+
+Example:
+
+Start testing when story is “Ready”; exit when DoD met.
+
+9️⃣ Collaboration Model
+
+Who does what:
+
+QA responsibilities
+
+Dev collaboration
+
+Business involvement
+
+🧠 Test Approach vs Test Strategy (Very Important)
+Aspect	Test Strategy	Test Approach
+Focus	High-level direction	Execution-level details
+Scope	Project / Program	Phase / Sprint
+Stability	Relatively stable	Adaptive
+Detail	What & Why	How
+Audience	Management	Team
+🔥 Example Test Approach (Agile)
+
+Testing will follow a shift-left approach with developers responsible for unit tests and QA focusing on API and UI validation. Critical user journeys will be automated and executed in CI. Exploratory testing will be conducted each sprint. Risk-based testing will guide test depth. Defects will be managed within sprint backlog.
+
+🔥 Example Test Approach (Waterfall)
+
+Testing will be executed phase-wise with system testing followed by UAT. Manual test cases will be designed based on requirements. Regression testing will be performed after defect fixes. Entry and exit criteria will govern phase completion.
+
+🎯 Interview-Ready Definition
+
+Test approach defines the overall methodology and techniques used to carry out testing activities, including test levels, test types, risk handling, automation strategy, environment usage, and defect management.
+
+🧠 Senior QA Insight
+
+A test approach should change when risks, constraints, or delivery models change — not because of tools or trends.
+
+✅ Final Takeaway
+
+Test Strategy sets the direction.
+Test Approach drives execution.

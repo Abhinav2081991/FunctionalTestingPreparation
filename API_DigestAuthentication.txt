@@ -1,0 +1,127 @@
+What is Digest Authentication?
+
+Digest Authentication is an HTTP authentication mechanism where:
+
+The password is never sent over the network,
+instead a hash (digest) of credentials + request data is sent.
+
+It was designed to fix the biggest weakness of Basic Auth.
+
+⚠️ Problem with Basic Authentication
+
+Basic Auth sends:
+
+Authorization: Basic Base64(username:password)
+
+
+Issues:
+
+Base64 is not encryption
+
+Credentials can be decoded easily
+
+Requires HTTPS to be safe
+
+✅ How Digest Authentication Works (Step-by-Step)
+
+Digest Auth uses a challenge–response mechanism.
+
+1️⃣ Client sends request (no auth)
+GET /secure-resource
+
+2️⃣ Server responds with 401 + challenge
+WWW-Authenticate: Digest
+  realm="test-realm",
+  nonce="abc123",
+  qop="auth"
+
+3️⃣ Client sends hashed response
+Authorization: Digest
+  username="user",
+  realm="test-realm",
+  nonce="abc123",
+  uri="/secure-resource",
+  response="9f4e3..."
+
+
+✔ Password is never sent
+✔ Hash changes per request
+
+🧠 What is inside the Digest?
+
+The hash is usually:
+
+MD5( MD5(username:realm:password) : nonce : MD5(method:uri) )
+
+
+So even if intercepted:
+
+Cannot reverse to get password
+
+Replay attacks are harder
+
+🧪 Digest Authentication in Rest Assured
+✅ Example Code
+given()
+    .auth()
+    .digest("username", "password")
+.when()
+    .get("/secure-endpoint")
+.then()
+    .statusCode(200);
+
+
+Rest Assured automatically:
+
+Handles the challenge
+
+Generates digest hash
+
+Sends correct headers
+
+🆚 Basic vs Digest Authentication
+Feature	Basic	Digest
+Password sent	Yes (Base64)	❌ No
+Challenge-response	❌	✅
+Replay protection	❌	Partial
+HTTPS required	Mandatory	Recommended
+Complexity	Simple	More complex
+Modern usage	Rare	Legacy
+⚠️ Important Limitations of Digest Auth
+
+❌ Uses MD5 (cryptographically weak today)
+❌ Not suitable for modern APIs
+❌ Poor support in mobile/cloud APIs
+❌ No fine-grained scopes/claims
+
+That’s why…
+
+🚀 Why Digest Auth Is Rare Today
+
+Most modern systems use:
+
+OAuth 2.0
+
+JWT / Bearer tokens
+
+mTLS
+
+Digest is mostly seen in:
+
+Legacy systems
+
+Network devices
+
+Embedded systems
+
+Old enterprise apps
+
+🧠 Interview-Ready One-Liner
+
+Digest Authentication improves on Basic Auth by using a challenge–response mechanism where hashed credentials are sent instead of plain passwords, reducing exposure to credential theft.
+
+✅ When Should You Test Digest Auth?
+
+✔ Legacy enterprise APIs
+✔ Network hardware APIs
+✔ Backward-compatible systems

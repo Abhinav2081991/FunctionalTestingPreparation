@@ -1,0 +1,304 @@
+What are Listeners in Selenium?
+
+Listeners are components that listen to test execution events and perform custom actions like:
+
+Logging
+Screenshot capture
+Retry on failure
+Reporting
+Debugging
+
+📌 Commonly used with TestNG + Selenium
+
+🔹 Types of Listeners Used in Selenium (TestNG)
+1️⃣ ITestListener (MOST IMPORTANT)
+Purpose
+
+		Listens to test-level events:
+		Test start
+		Test success
+		Test failure
+		Test skip
+		Common Uses
+
+		✔ Take screenshot on failure
+		✔ Add logs to reports
+		✔ Trigger retries
+
+		Methods in ITestListener
+		onTestStart()
+		onTestSuccess()
+		onTestFailure()
+		onTestSkipped()
+		onTestFailedButWithinSuccessPercentage()
+		onFinish()
+
+Example: ITestListener Implementation
+public class TestListener implements ITestListener {
+
+    @Override
+    public void onTestStart(ITestResult result) {
+        System.out.println("Test Started: " + result.getName());
+    }
+
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        System.out.println("Test Passed: " + result.getName());
+    }
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        System.out.println("Test Failed: " + result.getName());
+        // screenshot code here
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        System.out.println("Test Skipped: " + result.getName());
+    }
+}
+
+		Register Listener
+		@Listeners(TestListener.class)
+		public class LoginTest {
+			@Test
+			public void loginTest() {
+				Assert.assertTrue(false);
+			}
+		}
+
+2️⃣ ISuiteListener
+
+Purpose
+Listens to suite-level events.
+Common Uses
+
+✔ Setup before entire suite
+✔ Cleanup after suite
+✔ Start / End reports
+
+Methods
+onStart(ISuite suite)
+onFinish(ISuite suite)
+
+Example
+public class SuiteListener implements ISuiteListener {
+
+    @Override
+    public void onStart(ISuite suite) {
+        System.out.println("Suite Started: " + suite.getName());
+    }
+
+    @Override
+    public void onFinish(ISuite suite) {
+        System.out.println("Suite Finished: " + suite.getName());
+    }
+}
+
+		Register Listener - testNG.xml - 
+
+		  <listeners>
+				<listener class-name="listeners.SuiteListener"/>
+			</listeners>
+			
+			@Listeners(SuiteListener.class)
+				public class LoginTest {
+				}
+
+3️⃣ IInvokedMethodListener
+Purpose
+
+Listens to before & after every method (test + config).
+
+Common Uses
+
+✔ Measure execution time
+✔ Advanced logging
+✔ Dynamic setup
+
+Methods
+beforeInvocation()
+afterInvocation()
+
+Example
+public class MethodListener implements IInvokedMethodListener {
+
+    @Override
+    public void beforeInvocation(IInvokedMethod method, ITestResult result) {
+        System.out.println("Before Method: " + method.getTestMethod().getMethodName());
+    }
+
+    @Override
+    public void afterInvocation(IInvokedMethod method, ITestResult result) {
+        System.out.println("After Method: " + method.getTestMethod().getMethodName());
+    }
+}
+
+4️⃣ IRetryAnalyzer (Retry Failed Tests)
+Purpose
+
+Automatically re-run failed tests.
+
+Common Uses
+
+✔ Handle flaky tests
+✔ Environment instability
+
+Retry Analyzer
+public class RetryAnalyzer implements IRetryAnalyzer {
+
+    int count = 0;
+    int maxRetry = 2;
+
+    @Override
+    public boolean retry(ITestResult result) {
+        if (count < maxRetry) {
+            count++;
+            return true;
+        }
+        return false;
+    }
+}
+
+Attach Retry to Test
+@Test(retryAnalyzer = RetryAnalyzer.class)
+public void flakyTest() {
+    Assert.assertTrue(false);
+}
+
+5️⃣ IAnnotationTransformer (ADVANCED)
+Purpose
+
+Modify test annotations at runtime.
+
+Common Uses
+
+✔ Apply retry logic globally
+✔ Change test priority dynamically
+
+Example
+public class AnnotationTransformer implements IAnnotationTransformer {
+
+    @Override
+    public void transform(ITestAnnotation annotation,
+                          Class testClass,
+                          Constructor testConstructor,
+                          Method testMethod) {
+
+        annotation.setRetryAnalyzer(RetryAnalyzer.class);
+    }
+}
+
+
+📌 No need to add retry to each test manually
+
+6️⃣ WebDriverEventListener (Selenium-level Listener)
+Purpose
+
+Listens to browser actions.
+
+Common Uses
+
+✔ Log clicks & navigation
+✔ Debug UI failures
+
+Example
+public class WebEventListener implements WebDriverEventListener {
+
+    @Override
+    public void beforeClickOn(WebElement element, WebDriver driver) {
+        System.out.println("Clicking element: " + element);
+    }
+
+    @Override
+    public void afterClickOn(WebElement element, WebDriver driver) {
+        System.out.println("Clicked element");
+    }
+
+    // Other overridden methods omitted for brevity
+}
+
+Register Event Listener
+			WebDriver driver = new ChromeDriver();
+            // Wrap driver with listener
+            MyWebDriverListener listener = new MyWebDriverListener();
+            driver = new EventFiringDecorator(listener).decorate(driver);
+
+🔥 Most Used Listeners in Real Projects
+			Listener					Usage
+			ITestListener				Screenshot, logs
+			ISuiteListener				Report start/end
+			IRetryAnalyzer				Retry failures
+			IAnnotationTransformer		Global retry
+			WebDriverEventListener		Debug UI
+
+🎤 Interview-Ready 45-Second Answer
+
+“In Selenium with TestNG, listeners are used to capture test and execution events. The most commonly used is ITestListener for handling test pass, fail, skip actions like screenshot capture. ISuiteListener is used for suite-level setup, IRetryAnalyzer handles flaky test retries, IAnnotationTransformer applies retry logic globally, and WebDriverEventListener captures browser-level actions for debugging.”
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+Option  - - - - 
+1️⃣ Using @Listeners (Class Level)
+@Listeners(TestListener.class)
+public class LoginTest extends BaseTest {
+
+    @Test
+    public void loginTest() {
+        Assert.assertTrue(false);
+    }
+}
+
+Option 2️⃣ Using testng.xml (RECOMMENDED)
+<listeners>
+    <listener class-name="listeners.TestListener"/>
+    <listener class-name="listeners.AnnotationTransformer"/>
+</listeners>
+
+
+✔ Centralized
+✔ Cleaner tests
+
+Option 3️⃣ Service Loader (Advanced – Rare)
+
+META-INF/services/org.testng.ITestNGListener
+
+listeners.TestListener
+listeners.AnnotationTransformer
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Correct 			Parallel-Safe Design
+Component			Design
+
+WebDriver			ThreadLocal
+ExtentTest			ThreadLocal
+Screenshot			Timestamp
+Listener			Stateless
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+How Listeners Behave in Parallel Runs with threadlocal.
+Parallel Execution Flow
+Thread-1 → Test A → Listener
+Thread-2 → Test B → Listener
+Thread-3 → Test C → Listener
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+Correct Parallel-Safe Design
+
+Component	Design
+WebDriver	ThreadLocal
+ExtentTest	ThreadLocal
+Screenshot	Timestamp
+Listener	Stateless
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+Parallel-Safe Architecture Diagram (Conceptual)
+Thread-1 → Driver-1 → Test-1 → Report-1
+Thread-2 → Driver-2 → Test-2 → Report-2
+Thread-3 → Driver-3 → Test-3 → Report-3

@@ -1,0 +1,13 @@
+hy Java 8 was a game-changer for Automation Frameworks?
+
+Answer:
+
+Java 8 introduced:
+
+Lambda expressions → concise test utilities
+Streams API → powerful collection processing
+Functional interfaces → reusable test behaviors
+Optional → safer null handling in test data
+Method references → cleaner framework code
+
+➡️ Result: Cleaner, modular, reusable, maintainable frameworks

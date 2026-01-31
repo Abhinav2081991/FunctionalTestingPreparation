@@ -1,0 +1,229 @@
+What is MutableCapabilities in Selenium?
+
+MutableCapabilities is a base class in Selenium that represents a modifiable (mutable) set of browser capabilities.
+
+👉 In simple terms:
+
+It is a container (map-like structure) that holds capabilities which can be added, changed, or merged at runtime.
+
+📦 Where does it sit in Selenium’s class hierarchy?
+
+This is the key to understanding it.
+
+java.lang.Object
+   └── org.openqa.selenium.Capabilities (interface)
+         └── org.openqa.selenium.MutableCapabilities (class)
+               ├── ChromeOptions
+               ├── FirefoxOptions
+               ├── EdgeOptions
+               ├── SafariOptions
+               └── DesiredCapabilities (legacy)
+
+🔑 Key takeaway
+
+All browser Options classes extend MutableCapabilities
+
+RemoteWebDriver accepts Capabilities
+
+MutableCapabilities bridges flexibility + W3C compliance
+
+🔄 Why Selenium introduced MutableCapabilities
+
+Before Selenium 4:
+
+Capabilities were split between:
+
+DesiredCapabilities
+
+Browser-specific options
+
+Merging was messy and error-prone
+
+JsonWire protocol caused inconsistencies
+
+Selenium 4 goals:
+
+✔ Full W3C compliance
+✔ Single capability model
+✔ Safe merging
+✔ Vendor-namespaced options
+
+👉 MutableCapabilities became the core capability model
+
+🧠 What does “Mutable” actually mean?
+
+It means:
+
+Capabilities can be added
+
+Capabilities can be overridden
+
+Capabilities can be merged
+
+Capabilities can be composed dynamically
+
+Example:
+
+MutableCapabilities caps = new MutableCapabilities();
+caps.setCapability("browserName", "chrome");
+caps.setCapability("acceptInsecureCerts", true);
+
+
+This is mutable because:
+
+You can keep modifying it until session creation
+
+Final snapshot is sent to the browser driver
+
+🧪 Real Example: ChromeOptions (Behind the scenes)
+ChromeOptions options = new ChromeOptions();
+options.addArguments("--headless");
+options.setAcceptInsecureCerts(true);
+
+
+Internally:
+
+ChromeOptions stores everything in a MutableCapabilities map
+
+Selenium serializes it into W3C-compliant JSON
+
+Browser driver consumes it
+
+So ChromeOptions IS a MutableCapabilities.
+
+🔁 Capability Merging (Very Important)
+
+One of the biggest uses of MutableCapabilities is merging.
+
+MutableCapabilities base = new MutableCapabilities();
+base.setCapability("acceptInsecureCerts", true);
+
+ChromeOptions chrome = new ChromeOptions();
+chrome.addArguments("--start-maximized");
+
+chrome.merge(base);
+
+
+Now:
+
+chrome contains both Chrome-specific and generic capabilities
+
+This is clean and W3C-safe
+
+🧠 Why merge() matters in frameworks
+
+In real automation frameworks, you often have:
+
+Global capabilities (timeouts, certs, logging)
+
+Browser-specific capabilities
+
+CI/CD overrides
+
+Cloud provider capabilities
+
+MutableCapabilities allows you to compose them cleanly.
+
+🏗 Real Framework Design Example
+Capability Factory (Senior-level pattern)
+public class CapabilityFactory {
+
+    public static MutableCapabilities getCapabilities(String browser) {
+
+        MutableCapabilities caps;
+
+        switch (browser.toLowerCase()) {
+            case "chrome":
+                caps = new ChromeOptions();
+                break;
+            case "firefox":
+                caps = new FirefoxOptions();
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported browser");
+        }
+
+        caps.setCapability("acceptInsecureCerts", true);
+        caps.setCapability("pageLoadStrategy", "eager");
+
+        return caps;
+    }
+}
+
+
+Later:
+
+WebDriver driver = new RemoteWebDriver(gridUrl,
+        CapabilityFactory.getCapabilities(browser));
+
+
+✔ Clean
+✔ Extendable
+✔ W3C compliant
+✔ CI-friendly
+
+🌐 Cloud Execution Example (BrowserStack / SauceLabs)
+ChromeOptions options = new ChromeOptions();
+
+options.setCapability("bstack:options", Map.of(
+    "os", "Windows",
+    "osVersion", "11",
+    "buildName", "Regression",
+    "sessionName", "Login Tests"
+));
+
+
+Here:
+
+bstack:options is a vendor-namespaced capability
+
+Stored inside MutableCapabilities
+
+Safely ignored by local drivers
+
+Used by cloud provider
+
+⚠️ Common Misconceptions
+❌ “MutableCapabilities is only for RemoteWebDriver”
+
+Wrong.
+
+Used for local
+
+Used for Grid
+
+Used for cloud
+
+Used by all Options classes
+
+❌ “DesiredCapabilities is same as MutableCapabilities”
+
+Not exactly.
+
+DesiredCapabilities	MutableCapabilities
+Legacy	Modern
+JsonWire based	W3C based
+Browser-agnostic	Standardized
+Deprecated usage	Core Selenium 4
+🧠 Interview-Level Explanation (Perfect Answer)
+
+MutableCapabilities is Selenium’s core capability container that allows dynamic addition, modification, and merging of browser capabilities. All browser-specific Options classes extend it, enabling W3C-compliant capability composition for local, Grid, and cloud execution.
+
+🔍 When YOU should use MutableCapabilities directly
+
+Use it when:
+✔ Building a generic capability factory
+✔ Merging common + browser-specific capabilities
+✔ Supporting multiple execution environments
+✔ Designing CI/CD parameterized runs
+
+Avoid direct use when:
+❌ Simple local browser runs (use Options directly)
+
+🎯 Final Mental Model
+
+Think of MutableCapabilities as:
+
+🧠 A flexible capability backpack
+You keep adding tools (timeouts, options, cloud configs)
+Until Selenium zips it and hands it to the browser

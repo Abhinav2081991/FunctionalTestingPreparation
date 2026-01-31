@@ -1,0 +1,181 @@
+Dependency Inversion Principle (DIP)
+📜 Definition (Interview-friendly)
+
+High-level modules should not depend on low-level modules. Both should depend on abstractions.
+Abstractions should not depend on details; details should depend on abstractions.
+
+1️⃣ Identify High-level vs Low-level in your framework
+🔹 High-level modules (WHAT to do)
+
+RegisterPage
+
+BasePage
+
+StepDefinition
+
+🔹 Low-level modules (HOW Selenium does it)
+
+SeleniumClickActions
+
+SeleniumTypeActions
+
+ClickableWaitStrategy
+
+VisibleWaitStrategy
+
+WebDriver / ExpectedConditions
+
+2️⃣ ❌ DIP Violation (Before Refactor)
+❌ Example from earlier version
+public class RegisterPage {
+
+    public void fillForm() {
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+            .until(ExpectedConditions.elementToBeClickable(register))
+            .click();
+    }
+}
+
+❌ Why this violates DIP
+Problem	Explanation
+High-level depends on low-level	Page directly depends on Selenium APIs
+Hard to change	Cannot switch to Playwright
+Hard to test	Cannot mock WebDriverWait
+Business logic polluted	Page knows how clicking happens
+3️⃣ ✅ DIP-Compliant Design (Your Current Code)
+✅ Step 1: Define ABSTRACTIONS (interfaces)
+package services;
+
+import org.openqa.selenium.WebElement;
+
+public interface ClickActions {
+    void click(WebElement element);
+}
+
+package services;
+
+import org.openqa.selenium.WebElement;
+
+public interface TypeActions {
+    void type(WebElement element, String text);
+}
+
+
+➡ These are pure abstractions
+➡ No Selenium imports in pages
+
+✅ Step 2: High-level module depends on abstraction ONLY
+public class RegisterPage extends BasePage {
+
+    private final ClickActions click;
+    private final TypeActions type;
+
+    public RegisterPage(TestContext context) {
+        super(context);
+        this.click = context.getClickActions();
+        this.type = context.getTypeActions();
+    }
+
+    public void fillForm() {
+        click.click(register);
+        type.type(firstName, "Abhinav");
+        type.type(lastName, "Tiwari");
+    }
+}
+
+
+✔ RegisterPage does NOT know:
+
+WebDriverWait
+
+WaitType
+
+Selenium
+
+ExpectedConditions
+
+✔ It only knows what action it wants.
+
+🔍 This is DIP in action
+
+RegisterPage (high-level)
+depends on
+ClickActions & TypeActions (abstractions)
+not
+SeleniumClickActions (implementation)
+
+4️⃣ Step 3: Low-level modules depend on abstractions
+public class SeleniumClickActions implements ClickActions {
+
+    private final WaitResolver resolver;
+
+    public SeleniumClickActions(WaitResolver resolver) {
+        this.resolver = resolver;
+    }
+
+    @Override
+    public void click(WebElement element) {
+        resolver.resolve(WaitType.CLICK)
+                .waitFor(element, 10)
+                .click();
+    }
+}
+
+
+✔ Low-level depends on interface
+✔ Can be replaced without touching pages
+
+5️⃣ Step 4: Dependency Wiring via TestContext (Inversion!)
+public class TestContext {
+
+    private final ClickActions clickActions;
+    private final TypeActions typeActions;
+
+    public TestContext(WebDriver driver,
+                       WaitResolver waitResolver,
+                       ClickActions clickActions,
+                       TypeActions typeActions) {
+        this.clickActions = clickActions;
+        this.typeActions = typeActions;
+    }
+
+    public ClickActions getClickActions() {
+        return clickActions;
+    }
+
+    public TypeActions getTypeActions() {
+        return typeActions;
+    }
+}
+
+🔄 Why this is INVERSION
+
+Pages do not create Selenium classes
+
+Framework injects implementations
+
+Control is inverted (IoC)
+
+6️⃣ Swap Selenium → Playwright (DIP PROOF)
+New implementation (NO page change)
+public class PlaywrightClickActions implements ClickActions {
+
+    @Override
+    public void click(WebElement element) {
+        // Playwright click
+    }
+}
+
+
+👉 Only DI wiring changes
+👉 Pages stay untouched
+
+7️⃣ DIP + ISP + LSP working together
+Principle	Where
+DIP	Pages depend on ClickActions, not Selenium
+ISP	Separate ClickActions & TypeActions
+LSP	Any ClickActions implementation can replace another
+SRP	Each class has one reason to change
+🎯 Interview Answer (READY-MADE)
+
+“In my Selenium framework, Dependency Inversion is implemented by ensuring that Page Objects and Step Definitions depend only on action interfaces like ClickActions and TypeActions rather than Selenium APIs. The concrete Selenium implementations depend on these abstractions and are injected via a TestContext using PicoContainer. This allows us to replace Selenium with another automation engine without modifying page logic.”

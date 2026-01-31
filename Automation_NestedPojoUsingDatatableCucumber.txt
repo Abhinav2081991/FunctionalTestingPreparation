@@ -1,0 +1,185 @@
+ataTable with Multiple Rows → Nested JSON (Cucumber + Java)
+1️⃣ Problem Statement (What Interviewers Ask)
+
+How do you pass multiple rows from a DataTable and convert them into a nested JSON structure for an API request?
+
+Example target JSON:
+
+{
+  "users": [
+    {
+      "name": "John",
+      "role": "Admin",
+      "address": {
+        "city": "London",
+        "zip": "12345"
+      }
+    },
+    {
+      "name": "Mike",
+      "role": "User",
+      "address": {
+        "city": "Berlin",
+        "zip": "54321"
+      }
+    }
+  ]
+}
+
+2️⃣ Feature File (Multiple Rows DataTable)
+Scenario: Create multiple users with address
+  Given user provides multiple user details
+    | name | role  | city   | zip   |
+    | John | Admin | London | 12345 |
+    | Mike | User  | Berlin | 54321 |
+
+3️⃣ POJO Design (Nested Objects)
+Address POJO
+public class Address {
+    private String city;
+    private String zip;
+
+    public Address() {}
+
+    public Address(String city, String zip) {
+        this.city = city;
+        this.zip = zip;
+    }
+
+    public String getCity() { return city; }
+    public String getZip() { return zip; }
+}
+
+User POJO
+public class User {
+    private String name;
+    private String role;
+    private Address address;
+
+    public User() {}
+
+    public User(String name, String role, Address address) {
+        this.name = name;
+        this.role = role;
+        this.address = address;
+    }
+
+    public String getName() { return name; }
+    public String getRole() { return role; }
+    public Address getAddress() { return address; }
+}
+
+Root POJO (Wrapper Object)
+import java.util.List;
+
+public class UserRequest {
+    private List<User> users;
+
+    public UserRequest(List<User> users) {
+        this.users = users;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+}
+
+4️⃣ Step Definition – DataTable → Nested POJO
+@Given("user provides multiple user details")
+public void user_provides_multiple_users(DataTable dataTable) {
+
+    List<Map<String, String>> rows = dataTable.asMaps();
+
+    List<User> users = new ArrayList<>();
+
+    for (Map<String, String> row : rows) {
+
+        Address address = new Address(
+                row.get("city"),
+                row.get("zip")
+        );
+
+        User user = new User(
+                row.get("name"),
+                row.get("role"),
+                address
+        );
+
+        users.add(user);
+    }
+
+    UserRequest request = new UserRequest(users);
+
+    response = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .post("/users/bulk");
+}
+
+
+✔ Multiple rows handled
+✔ Nested JSON created dynamically
+✔ Clean and scalable
+
+5️⃣ Generated JSON (Auto-Serialized)
+
+RestAssured + Jackson automatically converts POJO → JSON:
+
+{
+  "users": [
+    {
+      "name": "John",
+      "role": "Admin",
+      "address": {
+        "city": "London",
+        "zip": "12345"
+      }
+    },
+    {
+      "name": "Mike",
+      "role": "User",
+      "address": {
+        "city": "Berlin",
+        "zip": "54321"
+      }
+    }
+  ]
+}
+
+6️⃣ Alternative: Multiple Nested Objects (Advanced)
+Feature File
+| name | role | city        | zip   | country |
+| John | Admin| London      | 12345 | UK      |
+| Mike | User | Berlin      | 54321 | Germany |
+
+POJO Expansion
+class Address {
+    private String city;
+    private String zip;
+    private String country;
+}
+
+
+✔ Just extend the POJO, no test changes needed
+
+7️⃣ Why Not Direct POJO Mapping? (Important)
+
+❌ dataTable.asList(User.class) does NOT work for nested objects
+✔ Manual mapping gives full control
+✔ Prevents silent mapping failures
+
+8️⃣ Interview One-Liner
+
+For nested JSON with multiple rows, I convert the DataTable into a list of maps and manually map each row into nested POJOs before serializing it into JSON using RestAssured.
+
+9️⃣ Lead-Level Summary
+
+In our framework, we use DataTable-to-POJO manual mapping for nested JSON requests to support multi-row inputs, maintain type safety, and allow easy extension of payload structures without changing test logic.
+
+10️⃣ Common Follow-Up Questions
+
+Can we use Scenario Outline instead? → ❌ Not ideal for nested lists
+
+Why not JSON files? → DataTable better for readability
+
+Thread-safe? → Use local variables only

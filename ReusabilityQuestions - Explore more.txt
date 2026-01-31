@@ -1,0 +1,341 @@
+SECTION 1: Cucumber DataTable – Advanced & Real-World
+1️⃣ How is Cucumber DataTable internally represented?
+
+Expected depth
+
+List<List<String>>
+
+List<Map<String, String>>
+
+Map<String, String>
+
+Custom POJO mapping via @DataTableType
+
+2️⃣ When would you prefer DataTable over Scenario Outline + Examples?
+
+Look for
+
+Atomic step reuse
+
+Multi-column form filling
+
+Complex structured inputs
+
+Partial execution inside steps
+
+3️⃣ Explain the difference between:
+| username | password |
+
+
+vs
+
+| key | value |
+
+
+Expected answer
+
+Horizontal vs Vertical table
+
+Map vs List<Map>
+
+Flexibility vs strictness
+
+4️⃣ How do you convert DataTable into a domain object?
+
+Expected
+
+@DataTableType
+public User userEntry(Map<String, String> row) {
+    return new User(row.get("name"), row.get("email"));
+}
+
+5️⃣ What problems arise when using raw List<Map<String,String>>?
+
+Strong answers
+
+Tight coupling to column names
+
+Runtime errors
+
+No compile-time safety
+
+Poor refactorability
+
+6️⃣ How do you validate partial DataTables?
+
+Example:
+
+| field | expected |
+| name  | Abhinav  |
+
+
+Expected
+
+Iterative assertion strategy
+
+Map-driven validation
+
+Soft assertions
+
+7️⃣ How do you handle dynamic / optional columns in DataTable?
+
+Expected
+
+Optional getters
+
+Defensive null checks
+
+Default values
+
+Column normalization
+
+8️⃣ Can DataTables be reused across steps?
+
+Expected
+
+Yes via transformation
+
+No via direct sharing
+
+Store in Scenario Context
+
+🔹 SECTION 2: Scenario Parameterization (Beyond Basics)
+9️⃣ Why Scenario Outline is NOT always a good idea?
+
+Look for
+
+Step explosion
+
+Maintenance overhead
+
+Tight coupling
+
+Loss of scenario intent
+
+🔟 Difference between:
+
+Scenario Outline
+
+DataTable
+
+External test data (JSON / CSV)
+
+Criteria	Outline	DataTable	External
+Readability	High	Medium	Low
+Scalability	Low	Medium	High
+Reuse	Poor	Good	Excellent
+1️⃣1️⃣ How do you parameterize conditional flows?
+
+Expected
+
+Feature flags in DataTable
+
+Switch logic in step
+
+Avoid Gherkin branching
+
+1️⃣2️⃣ How do you handle environment-specific test data?
+
+Expected
+
+Config-driven resolution
+
+Token replacement
+
+Context-based overrides
+
+1️⃣3️⃣ How do you prevent duplicate test coverage with Scenario Outline?
+
+Expected
+
+Equivalence class partitioning
+
+Boundary-value strategy
+
+Risk-based selection
+
+1️⃣4️⃣ How do you pass complex objects across steps?
+
+Expected
+
+Scenario Context
+
+PicoContainer DI
+
+Avoid static storage
+
+🔹 SECTION 3: Reusability Patterns (Senior-Level Focus)
+1️⃣5️⃣ How do you design reusable steps WITHOUT making them generic?
+
+Look for
+
+Action-based steps
+
+Domain language
+
+Avoid UI-specific verbs
+
+1️⃣6️⃣ Difference between Step Reuse and Step Abstraction
+
+Strong answer
+
+Reuse duplicates behavior; abstraction hides complexity.
+
+1️⃣7️⃣ How do you avoid tight coupling between Step Definitions and Pages?
+
+Expected
+
+Page exposes business actions
+
+Steps call intent-based methods
+
+DIP compliance
+
+1️⃣8️⃣ How do you handle reusable flows with different assertions?
+
+Expected
+
+Flow methods return state
+
+Assertion delegated to steps
+
+Strategy pattern
+
+1️⃣9️⃣ What anti-patterns exist in Cucumber reuse?
+
+Look for
+❌ “Swiss Army Steps”
+❌ Conditional logic in steps
+❌ UI terminology in feature files
+❌ Over-parameterization
+
+2️⃣0️⃣ How do you share state safely between steps?
+
+Expected
+
+Scenario-scoped TestContext
+
+PicoContainer
+
+No statics
+
+No singletons
+
+🔹 SECTION 4: DataTable + Reusability Combined
+2️⃣1️⃣ Design a reusable step for form submission using DataTable
+
+Expected approach
+
+DataTable → POJO
+
+Page.fillForm(User)
+
+Validation outside page
+
+2️⃣2️⃣ How do you validate tables returned from API using DataTable?
+
+Expected
+
+Expected vs Actual mapping
+
+Partial field comparison
+
+Order-insensitive checks
+
+2️⃣3️⃣ How do you implement default values in DataTables?
+
+Expected
+
+Optional columns
+
+Builder pattern
+
+Data normalization
+
+2️⃣4️⃣ How do you reuse the same DataTable across UI & API tests?
+
+Expected
+
+Domain model mapping
+
+Decoupled transport layer
+
+Same object, different executor
+
+🔹 SECTION 5: Architecture & Best Practices
+2️⃣5️⃣ How does SOLID influence Cucumber step design?
+
+Expected
+
+SRP: One intent per step
+
+ISP: Small step interfaces
+
+DIP: Steps depend on abstractions
+
+2️⃣6️⃣ How do you keep Feature files readable for non-technical users?
+
+Expected
+
+Business language
+
+No locators
+
+No technical jargon
+
+Declarative intent
+
+2️⃣7️⃣ How do you refactor flaky DataTable-driven tests?
+
+Expected
+
+Stabilize waits
+
+Remove hidden dependencies
+
+Normalize input data
+
+Improve assertions
+
+2️⃣8️⃣ How do you version DataTables safely?
+
+Expected
+
+Schema validation
+
+Backward compatibility
+
+Migration helpers
+
+🔹 SECTION 6: Lead / Architect Questions
+2️⃣9️⃣ How would you train juniors to use DataTable correctly?
+
+Expected
+Usage guidelines
+Code reviews
+Patterns library
+Examples vs anti-examples
+
+3️⃣0️⃣ If you had to audit a legacy Cucumber suite, what would you check first?
+
+Expected
+
+Step duplication
+Parameter misuse
+Scenario outline explosion
+Maintenance cost
+
+🎯 FINAL INTERVIEW TIP (VERY IMPORTANT)
+
+If you are 12+ years experienced, interviewers expect:
+
+WHY, not HOW
+
+Trade-offs
+
+Design thinking
+
+Maintainability over syntax
+
+Anyone can write DataTable code.
+Seniors design sustainable test systems.
