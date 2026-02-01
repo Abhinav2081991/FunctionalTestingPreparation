@@ -1,4 +1,6 @@
+
 <MAIN Branch> 1. In Software product testing there is a switch from Waterfall:  model to Agile: .  What changes should be accommodated Test Strategy document? Explain with details.
+
 Answer: “When moving from Waterfall:  to Agile: , the Test Strategy changes from a static, phase-based document to a living document. Testing becomes continuous, aligned with user stories and acceptance criteria. Automation becomes mandatory within the sprint, regression is incremental, environments are used early, and quality ownership shifts from QA to the entire Agile:  team. The strategy is reviewed and refined every sprint or release.”
 
 
