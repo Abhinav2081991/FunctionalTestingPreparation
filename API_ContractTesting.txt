@@ -1,0 +1,216 @@
+What is Contract Testing (Quick Reminder)
+
+Contract testing verifies that:
+
+✅ The consumer’s expectations
+match
+✅ The provider’s implementation
+
+Without spinning up the real provider.
+
+🧩 Where WireMock Fits
+
+WireMock is mainly used for:
+
+✔ Consumer-side contract tests
+✔ Stubbing provider APIs
+✔ Verifying request/response structure
+✔ Simulating edge cases & failures
+
+WireMock does NOT enforce provider verification automatically like Pact — but it’s lighter, simpler, and very popular in real projects.
+
+🏗️ Example Architecture
+Scenario
+
+Consumer Service: Order Service
+
+Provider Service: Payment Service
+
+Order Service calls:
+
+GET /payments/{orderId}
+
+🪜 Step-by-Step: Contract Testing with WireMock
+1️⃣ Add WireMock Dependency
+Maven
+<dependency>
+    <groupId>com.github.tomakehurst</groupId>
+    <artifactId>wiremock-jre8</artifactId>
+    <version>2.35.0</version>
+    <scope>test</scope>
+</dependency>
+
+2️⃣ Define the Contract (Stub)
+
+This is the contract from the consumer’s point of view.
+
+Contract Expectations:
+
+Endpoint exists
+
+Correct HTTP method
+
+Required headers
+
+Response structure & status
+
+WireMock Stub (Java)
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+@BeforeAll
+static void setup() {
+    WireMock.configureFor("localhost", 8089);
+    WireMockServer server = new WireMockServer(8089);
+    server.start();
+
+    stubFor(get(urlEqualTo("/payments/123"))
+        .withHeader("Accept", equalTo("application/json"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody("""
+                {
+                  "orderId": "123",
+                  "status": "SUCCESS",
+                  "amount": 4500
+                }
+            """)));
+}
+
+
+📌 This stub is your contract.
+
+3️⃣ Call WireMock Instead of Real Provider
+Application config (test profile)
+payment.service.url=http://localhost:8089
+
+Consumer Code (Order Service)
+public PaymentResponse getPayment(String orderId) {
+    return restTemplate.getForObject(
+        paymentServiceUrl + "/payments/" + orderId,
+        PaymentResponse.class
+    );
+}
+
+4️⃣ Write the Contract Test (Consumer Side)
+@Test
+void shouldFetchPaymentSuccessfully() {
+
+    PaymentResponse response = paymentClient.getPayment("123");
+
+    assertEquals("SUCCESS", response.getStatus());
+    assertEquals(4500, response.getAmount());
+}
+
+
+✔ Confirms consumer works
+✔ Confirms response structure
+✔ No real provider needed
+
+5️⃣ Verify Provider Interaction (Optional but Important)
+
+WireMock lets you verify how the API was called.
+
+verify(getRequestedFor(urlEqualTo("/payments/123"))
+    .withHeader("Accept", equalTo("application/json")));
+
+
+This ensures:
+
+Correct endpoint
+
+Correct headers
+
+Correct method
+
+🚨 Negative Contract Testing (Very Important)
+Example: Provider returns 404
+stubFor(get(urlEqualTo("/payments/999"))
+    .willReturn(aResponse().withStatus(404)));
+
+@Test
+void shouldHandlePaymentNotFound() {
+    assertThrows(PaymentNotFoundException.class,
+        () -> paymentClient.getPayment("999"));
+}
+
+
+✔ Validates error contracts
+✔ Prevents runtime surprises
+
+📁 JSON-Based Contract (Best Practice)
+
+Store contracts as JSON files (cleaner + reusable).
+
+src/test/resources/contracts/payment-success.json
+
+{
+  "orderId": "123",
+  "status": "SUCCESS",
+  "amount": 4500
+}
+
+.withBodyFile("contracts/payment-success.json")
+
+🔁 Provider Validation (Manual but Practical)
+How provider team validates:
+
+Run Payment Service locally
+
+Use same WireMock stubs
+
+Compare actual response vs stub
+
+👉 Many teams integrate this via:
+
+CI pipelines
+
+Regression API tests
+
+🆚 WireMock vs Pact (Interview Gold)
+Aspect	WireMock	Pact
+Consumer-side mocking	✔ Yes	✔ Yes
+Provider verification	❌ Manual	✔ Automated
+Learning curve	⭐ Easy	⚠ Medium
+Flexibility	⭐⭐⭐⭐	⭐⭐⭐
+Industry adoption	Very High	High
+
+👉 Real-world truth:
+
+WireMock → fast, pragmatic teams
+
+Pact → strict contract governance
+
+🧠 How to Explain in an Interview
+
+“We perform consumer-driven contract testing using WireMock by stubbing provider APIs based on consumer expectations. These stubs act as contracts and are used during consumer tests. Provider teams validate their APIs against the same contracts to ensure backward compatibility.”
+
+🧪 Bonus: Rest Assured + WireMock
+given()
+    .baseUri("http://localhost:8089")
+.when()
+    .get("/payments/123")
+.then()
+    .statusCode(200)
+    .body("status", equalTo("SUCCESS"))
+    .body("amount", equalTo(4500));
+
+🧠 Summary
+
+✔ WireMock stubs = consumer contracts
+✔ Fast, isolated testing
+✔ Validates happy & failure paths
+✔ CI-friendly
+✔ Excellent for microservices
+
+If you want next:
+
+🆚 WireMock vs Pact with same example
+
+🧪 Contract testing in CI/CD
+
+🔄 Backward compatibility testing
+
+🧱 Schema-based contract validation
+
+🏗️ Spring Cloud Contract alternative

@@ -1,18 +1,26 @@
 Core Comparison
-Feature 	git revert	git reset
+Feature 		git revert																				git reset
+
 History Effect	Safe/Additive: Creates a new commit that inverses the changes of a target commit.	Destructive: Moves the branch pointer backward, effectively removing commits from history.
+
 Scope	Can undo any specific commit from the past.	Primarily used to "rewind" to a specific point, discarding everything after it.
 Best Use Case	Public/Shared Branches: Since it doesn't rewrite history, it won't break others' work.	Private/Local Branches: Ideal for cleaning up local mistakes before pushing.
+
 1. git revert (The "Safe" Undo)
 Instead of deleting a bad commit, git revert creates a new commit that performs the exact opposite of the changes in the target commit. 
 Command: git revert <commit_id>
 Result: The original "bad" commit remains in the history, and a new "revert" commit is added on top.
 Why use it: It is the only way to safely undo changes on a shared remote repository without causing merge conflicts for your teammates. 
+
 2. git reset (The "Rewind" Undo)
 This command moves your current branch pointer (HEAD) back to a previous commit, making it look as though the subsequent commits never happened. There are three main modes: 
 --soft: Moves HEAD back but keeps your changes in the staging area.
 --mixed (Default): Moves HEAD back and unstages changes, but keeps them in your working directory.
 --hard: Moves HEAD back and deletes all changes in both the staging area and working directory. Use with extreme caution as this is destructive. 
+
+
 Summary Recommendation
+
 Use git reset for local-only fixes where you haven't shared your code yet.
+
 Use git revert for any commit that has already been pushed to a remote server. 

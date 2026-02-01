@@ -211,15 +211,17 @@ given()
 ✔ Often combined with OAuth2
 
 🔁 Comparison Table (Interview Gold)
-Auth Type	Method	Usage
-Basic	basic()	Legacy
-Preemptive Basic	preemptive().basic()	CI-friendly
-Digest	digest()	Legacy secure
-OAuth 1.0	oauth()	Deprecated
-OAuth 2.0	oauth2()	Modern APIs
-Form	form()	Web apps
-API Key	header()	Microservices
-JWT	header()	Cloud systems
+Auth Type				Method					Usage
+Basic					basic()					Legacy
+Preemptive Basic		preemptive().basic()	CI-friendly
+Digest					digest()				Legacy secure
+OAuth 1.0				oauth()					Deprecated
+OAuth 2.0				oauth2()				Modern APIs
+Form					form()					Web apps
+API Key					header()				Microservices
+JWT						header()				Cloud systems
+
+
 🧠 Interview-Ready Summary
 
 In Rest Assured, authentication can be handled using Basic, Digest, OAuth1, OAuth2, Form, or custom header mechanisms. OAuth2 and JWT are most common in modern APIs, while Basic and Digest are mainly used in legacy systems.

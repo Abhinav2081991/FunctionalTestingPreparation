@@ -5,7 +5,6 @@ PUT is used to:
 Update an existing resource completely
 
 The request body usually represents the full object
-
 PUT is idempotent (same request → same result)
 
 🧪 Real-World Example Scenario
@@ -49,7 +48,7 @@ public class PutExampleTest {
             .put("/users/{id}")
         .then()
             .statusCode(200)
-            .body("name", equalTo("Abhinav Tiwari"))
+            .body("name", equalTo("Abhinav Tiwari"))   // Hamcrest matches. 
             .body("role", equalTo("QA Lead"));
     }
 }
@@ -66,6 +65,7 @@ public class User {
 }
 
 📌 PUT Using POJO
+
 User user = new User();
 user.setName("Abhinav Tiwari");
 user.setEmail("abhinav.tiwari@company.com");
@@ -113,10 +113,12 @@ given()
     .body("updatedAt", notNullValue());
 
 🆚 PUT vs PATCH (Interview Favorite)
-Aspect	PUT	PATCH
-Update type	Full update	Partial update
-Missing fields	Overwritten	Preserved
-Idempotent	✅	❌ (usually)
+Aspect					PUT					PATCH
+Update type				Full update			Partial update
+Missing fields			Overwritten			Preserved
+Idempotent				✅					❌ (usually)
+
+
 🧠 One-Line Interview Answer
 
 PUT is used to fully update an existing resource and is idempotent, meaning repeated requests produce the same result.

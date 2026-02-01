@@ -67,11 +67,11 @@ key1=value1&key2=value2
 and sends it in the request body.
 
 🔹 formParam vs queryParam vs body (Very Important)
-Feature	formParam	queryParam	body
-Location	Request body	URL	Request body
-Content-Type	application/x-www-form-urlencoded	N/A	application/json
-Used for	Forms, OAuth	Filtering	JSON payload
-Encoding	URL encoded	Plain text	JSON
+Feature					formParam									queryParam					body
+Location				Request body								URL	Request body
+Content-Type			application/x-www-form-urlencoded			N/A							application/json
+Used for				Forms, OAuth								Filtering					JSON payload
+Encoding				URL encoded									Plain text					JSON
 Example Comparison
 
 ❌ Wrong (Using JSON instead of formParam)

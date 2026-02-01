@@ -1,0 +1,212 @@
+What is a Key in SQL?
+
+A key is a column (or set of columns) used to:
+
+Uniquely identify a row
+
+Enforce data integrity
+
+Create relationships between tables
+
+Improve performance (indexes)
+
+1️⃣ Primary Key (PK)
+👉 What it is
+
+Uniquely identifies each row
+
+Cannot be NULL
+
+Cannot have duplicates
+
+Only one PK per table
+
+Example
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+✔ Key points
+
+Automatically creates a unique index
+
+Best candidate identifier
+
+2️⃣ Unique Key
+👉 What it is
+
+Ensures uniqueness
+
+NULL is allowed (DB-dependent)
+
+Multiple unique keys allowed per table
+
+Example
+CREATE TABLE UserAccount (
+    user_id INT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE
+);
+
+PK vs Unique (quick)
+Primary Key	Unique Key
+Only one	Multiple allowed
+No NULL	NULL allowed
+Main identifier	Alternate identifier
+3️⃣ Foreign Key (FK)
+👉 What it is
+
+Creates relationship between tables
+
+Ensures referential integrity
+
+Example
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    emp_id INT,
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
+);
+
+✔ Enforces
+
+Parent row must exist
+
+Prevents orphan records
+
+4️⃣ Composite Key (Compound Key)
+👉 What it is
+
+Key made of multiple columns
+
+Together they ensure uniqueness
+
+Example
+CREATE TABLE Enrollment (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY (student_id, course_id)
+);
+
+5️⃣ Candidate Key
+👉 What it is
+
+All columns that can qualify as a Primary Key
+
+Must be unique & NOT NULL
+
+Example
+Employee table:
+- emp_id
+- email
+
+
+Both can uniquely identify rows → both are candidate keys
+One is chosen as PK, the rest become alternate keys
+
+6️⃣ Alternate Key
+👉 What it is
+
+Candidate keys not selected as Primary Key
+
+Example
+Primary Key: emp_id
+Alternate Key: email
+
+
+Usually implemented using UNIQUE constraint
+
+7️⃣ Super Key
+👉 What it is
+
+Any combination of columns that uniquely identifies rows
+
+Includes unnecessary columns
+
+Example
+(emp_id)
+(emp_id, name)
+(emp_id, email)
+
+
+All are super keys, but only the minimal one is a candidate key.
+
+8️⃣ Natural Key
+👉 What it is
+
+Business-meaningful key
+
+Comes from real-world data
+
+Examples
+Email
+SSN
+Aadhaar number
+
+⚠️ Risk
+
+Business rules change
+
+Data may not stay immutable
+
+9️⃣ Surrogate Key
+👉 What it is
+
+Artificial/system-generated key
+
+No business meaning
+
+Examples
+id INT AUTO_INCREMENT
+UUID
+SEQUENCE
+
+✔ Preferred in most systems
+
+Stable
+
+Small
+
+Fast joins
+
+10️⃣ Secondary Key
+👉 What it is
+
+Non-unique key used for searching/filtering
+
+Often indexed
+
+Example
+CREATE INDEX idx_emp_name ON Employee(name);
+
+11️⃣ Partial Key (Weak Entity)
+👉 What it is
+
+Used with weak entities
+
+Needs parent key to be unique
+
+Example
+OrderItems:
+(order_id, item_no)
+
+🧠 Summary Table (Interview Gold)
+Key Type	Unique	NULL	Purpose
+Primary Key	Yes	No	Row identifier
+Unique Key	Yes	Yes*	Alternate uniqueness
+Foreign Key	No	Yes	Table relationship
+Composite Key	Yes	No	Multi-column PK
+Candidate Key	Yes	No	PK candidates
+Alternate Key	Yes	No	Non-chosen PK
+Super Key	Yes	No	Superset of candidate
+Natural Key	Yes	No	Business identity
+Surrogate Key	Yes	No	System-generated
+Secondary Key	No	Yes	Search performance
+
+* DB dependent
+
+🎯 Interview Tip (Senior-level answer)
+
+“I prefer surrogate primary keys for stability and performance,
+and enforce business uniqueness using unique constraints.”
+
+That line alone signals real-world DB experience.

@@ -3,21 +3,15 @@ Git Mistakes Only Senior Engineers Make (Real World)
 The Mistake
 
 Aggressively rebasing shared branches
-
 Force-pushing “beautiful” history
 
 Why Seniors Do This
 
 Strong engineering standards
-
 Desire for clean logs
-
 Damage
-
 Teammates lose commits
-
 CI breaks
-
 Trust erosion
 
 Senior Fix
@@ -33,15 +27,10 @@ The Mistake
 Advanced workflows without documentation
 
 Expecting juniors to “just know”
-
 Damage
-
 Mistakes propagate
-
 Fear of Git
-
 Silent errors
-
 Senior Fix
 
 ✔ Write Git playbooks
@@ -55,13 +44,9 @@ git push --force
 Why
 
 Release pressure
-
 CI failure panic
-
 Damage
-
 Lost commits
-
 Broken release trails
 
 Senior Fix
@@ -73,13 +58,9 @@ Senior Fix
 The Mistake
 
 Letting a branch drift for weeks
-
 Rebasing hundreds of commits at once
-
 Damage
-
 Massive conflicts
-
 Increased risk of error
 
 Senior Fix
@@ -95,11 +76,8 @@ git cherry-pick <commit>
 …but commit depended on earlier changes
 
 Damage
-
 Tests fail mysteriously
-
 Partial logic
-
 Senior Fix
 
 ✔ Inspect commit history
@@ -111,15 +89,10 @@ The Mistake
 Ignoring Git’s role in:
 
 Audits
-
 Compliance
-
 RCA
-
 Damage
-
 No traceability
-
 Weak postmortems
 
 Senior Fix
@@ -131,13 +104,9 @@ Senior Fix
 The Mistake
 
 Squashing flaky commits
-
 Deleting “ugly” test failures
-
 Damage
-
 Flakiness persists
-
 Same bugs reappear
 
 Senior Fix
@@ -152,9 +121,7 @@ The Mistake
 alias gco='git checkout'
 
 Damage
-
 Pair programming confusion
-
 Onboarding friction
 
 Senior Fix
@@ -165,14 +132,10 @@ Senior Fix
 9️⃣ Allowing “Temporary” Git Exceptions
 The Mistake
 
-“Just this once, force-push”
-
-“Skip PR for hotfix”
+“Just this once, force-push”  “Skip PR for hotfix”
 
 Damage
-
 Becomes the norm
-
 Process erosion
 
 Senior Fix
@@ -184,15 +147,10 @@ Senior Fix
 The Mistake
 
 Git seen only as version control
-
 No governance
-
 Missed Opportunity
-
 Quality gates
-
 Accountability
-
 Learning
 
 Senior Fix

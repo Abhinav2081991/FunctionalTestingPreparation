@@ -1,0 +1,169 @@
+Code: Use File directly as request body
+import io.restassured.RestAssured;
+import java.io.File;
+
+RestAssured.baseURI = "https://reqres.in";
+
+File jsonBody = new File("src/test/resources/payloads/createUser.json");
+
+RestAssured
+    .given()
+        .header("Content-Type", "application/json")
+        .body(jsonBody)
+    .when()
+        .post("/api/users")
+    .then()
+        .statusCode(201);
+
+
+✔ Rest Assured auto-serializes file
+✔ Clean & readable
+✔ Most commonly used
+
+🔹 Option 2: Read JSON as String (When You Need to Modify It)
+✅ Java 8+ (Recommended)
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+String body = new String(
+        Files.readAllBytes(
+            Paths.get("src/test/resources/payloads/createUser.json")
+        )
+);
+
+RestAssured
+    .given()
+        .contentType("application/json")
+        .body(body)
+    .when()
+        .post("/api/users");
+
+
+✔ Needed if you want replace values dynamically
+
+🔁 Example: Dynamic replacement
+body = body.replace("Abhinav", "DynamicUser");
+
+🔹 Option 3: Read JSON from Classpath (CI-Friendly ⭐)
+
+👉 BEST PRACTICE for Jenkins / GitHub Actions
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
+
+InputStream is = getClass()
+        .getClassLoader()
+        .getResourceAsStream("payloads/createUser.json");
+
+String body = IOUtils.toString(is, StandardCharsets.UTF_8);
+
+RestAssured
+    .given()
+        .contentType("application/json")
+        .body(body)
+    .when()
+        .post("/api/users");
+
+
+✔ Works in JAR / Docker / CI
+✔ Avoids absolute paths
+✔ Production-grade
+
+🔹 Option 4: Using Jackson (JSON → POJO → JSON)
+📌 POJO
+public class User {
+    private String name;
+    private String job;
+
+    // getters & setters
+}
+
+📌 Code
+ObjectMapper mapper = new ObjectMapper();
+
+User user = mapper.readValue(
+    new File("src/test/resources/payloads/createUser.json"),
+    User.class
+);
+
+user.setName("Updated Name");
+
+RestAssured
+    .given()
+        .contentType(ContentType.JSON)
+        .body(user)
+    .when()
+        .post("/api/users");
+
+
+✔ Clean business logic
+✔ Best for large APIs
+✔ Strong typing
+
+🔹 Option 5: Parameterized JSON (Hybrid – Real Projects)
+📄 Template JSON
+{
+  "name": "{{name}}",
+  "job": "{{job}}"
+}
+
+📌 Code
+String body = Files.readString(
+    Paths.get("src/test/resources/payloads/userTemplate.json")
+);
+
+body = body
+        .replace("{{name}}", "Abhinav")
+        .replace("{{job}}", "Lead");
+
+RestAssured
+    .given()
+        .contentType(ContentType.JSON)
+        .body(body)
+    .post("/api/users");
+
+
+✔ API chaining
+✔ Data-driven tests
+✔ Very popular in contract testing
+
+🔹 Option 6: Reusable Utility (Framework-Style ⭐)
+📌 JsonUtil.java
+public class JsonUtil {
+
+    public static String readJson(String path) {
+        try {
+            return new String(Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read JSON: " + path, e);
+        }
+    }
+}
+
+📌 Usage
+String body = JsonUtil.readJson(
+    "src/test/resources/payloads/createUser.json"
+);
+
+RestAssured
+    .given()
+        .contentType(ContentType.JSON)
+        .body(body)
+    .post("/api/users");
+
+
+✔ Clean
+✔ Maintainable
+✔ Framework-ready
+
+🧠 When to Use What?
+Scenario	Best Option
+Simple API	File as body
+Dynamic values	String / Template
+CI/CD pipelines	Classpath
+Large framework	POJO / Jackson
+Contract testing	File / Template
+💡 Interview Tip
+
+“In CI pipelines, I always prefer classpath-based JSON loading to avoid file path issues and to ensure portability.”

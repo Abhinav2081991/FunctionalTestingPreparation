@@ -9,11 +9,8 @@ git rebase main
 Git:
 
 Moves HEAD back in history
-
 Replays commits one by one
-
 Changes commit hashes
-
 Temporarily detaches HEAD
 
 If anything goes wrong:
@@ -32,10 +29,10 @@ Panic ensues 😄
 reflog records every movement of HEAD and branches — even if commits are no longer visible.
 
 Key Facts
-Property	Detail
-Scope	Local repo only
-Tracks	checkout, rebase, reset, commit
-Time-based	Entries expire (~90 days)
+Property		Detail
+Scope			Local repo only
+Tracks			checkout, rebase, reset, commit
+Time-based		Entries expire (~90 days)
 Saves	“Lost” commits
 🔍 Step 1: Inspect the Reflog
 git reflog
@@ -72,9 +69,7 @@ git reset --hard HEAD@{4}
 Reality Check
 
 Others may already have pulled
-
 Resetting shared branch is dangerous
-
 Safe Recovery
 
 Recover commits locally

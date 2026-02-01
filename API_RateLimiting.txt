@@ -1,13 +1,12 @@
 Rate Limiting in API Testing – Practical Examples (Rest Assured + Java)
+
 1️⃣ Validate Basic Rate Limiting (HTTP 429)
-Scenario
+Scenario: 
 
 API allows 5 requests per minute per user
 
 Test Goal
-
 First 5 → 200 OK
-
 6th → 429 Too Many Requests
 
 Code
@@ -34,12 +33,14 @@ public void validateRateLimitExceeded() {
 ✔ Deterministic
 ✔ Interview-friendly
 
-2️⃣ Validate Retry-After Header (Very Important)
+2️⃣ Validate "Retry-After" Header (Very Important)
+
 Why this matters
 
 Rate limiting without Retry-After is incomplete
 
-Code
+Code: 
+
 Response response =
     given()
         .header("Authorization", "Bearer " + TOKEN)
@@ -54,6 +55,7 @@ Advanced Validation
 int retryAfter = Integer.parseInt(response.getHeader("Retry-After"));
 assertTrue(retryAfter > 0);
 
+
 3️⃣ Token Bucket / Sliding Window Validation
 Scenario
 
@@ -62,7 +64,6 @@ Scenario
 Test Strategy
 
 Fire 10 quickly → OK
-
 11th → 429
 
 @Test
@@ -254,11 +255,8 @@ WireMock-Based Rate-Limit Simulation (CI-Safe)
 🎯 What We’re Solving
 
 Avoid hitting real API gateways
-
 No sleeps, no flakiness
-
 Deterministic 429 responses
-
 Validate headers (Retry-After, quota headers)
 
 🧠 Strategy (High Level)
@@ -266,9 +264,7 @@ Validate headers (Retry-After, quota headers)
 We simulate:
 
 First N requests → 200
-
 Next request → 429 Too Many Requests
-
 Add realistic headers
 
 This is contract testing for throttling, not load testing.
@@ -393,19 +389,25 @@ stubFor(get(urlEqualTo("/api/profile"))
 ✔ Catch shared-bucket bugs
 
 6️⃣ Why This Is CI-Perfect 🧠
-Problem	WireMock Solves
-Flaky throttling	✔ Deterministic
-Long sleeps	✔ None
-API abuse	✔ Local
-Shared env impact	✔ Isolated
-Hard to reproduce bugs	✔ Replayable
+Problem							WireMock Solves
+Flaky throttling				✔ Deterministic
+Long sleeps						✔ None
+API abuse						✔ Local
+Shared env impact				✔ Isolated
+Hard to reproduce bugs			✔ Replayable
+
+
 7️⃣ When to Use WireMock vs Real Gateway
-Use Case	Approach
-PR / CI	WireMock
-Contract validation	WireMock
-Boundary checks	WireMock
-Real quota tuning	Pre-Prod only
-Load testing	JMeter / Gatling
+
+Use Case					Approach
+PR / CI						WireMock
+Contract validation			WireMock
+Boundary checks				WireMock
+Real quota tuning			Pre-Prod only
+Load testing				JMeter / Gatling
+
+
+
 🎯 Interview-Ready Answer
 
 “We simulate rate limiting in CI using WireMock scenarios, returning deterministic 429 responses with quota headers after a defined number of requests. This allows us to validate client behavior, Retry-After handling, and throttling logic without hitting real API gateways or destabilizing shared environments.”

@@ -1,0 +1,166 @@
+What Does “Threshold” Mean in SonarQube?
+
+A threshold defines:
+When a rule should raise an issue
+How severe that issue is
+When it should fail the Quality Gate
+
+Bad thresholds = noisy Sonar → ignored by teams
+Good thresholds = trusted Sonar → enforced in CI
+
+🧠 Rule Threshold Strategy (Selenium Automation)
+1️⃣ Thread.sleep() Usage
+🔴 Rule
+
+AvoidThreadSleepInTests
+
+🎯 Threshold
+Metric				Value
+Allowed				0 occurrences
+Severity			Major
+Quality Gate		❌ Fail if ≥ 1
+💡 Why?
+
+Even one Thread.sleep() is harmful
+No legitimate use in automation frameworks
+
+📌 Hard stop rule
+
+2️⃣ Direct driver.findElement() Outside Pages
+🔴 Rule
+
+NoFindElementOutsidePageObject
+
+🎯 Threshold  --
+Metric					Value
+Allowed					0 in steps, tests
+Severity				Major
+Gate					❌ Fail if ≥ 1
+
+📌 Exception:
+Allowed inside pages.* only
+
+
+
+3️⃣ Static WebDriver Declaration
+🔴 Rule
+
+NoStaticWebDriver
+
+🎯 Threshold
+Metric					Value
+Allowed					0
+Severity				Critical
+Gate					❌ Immediate fail
+
+💥 Parallel execution killer
+
+4️⃣ Assertions Inside Page Objects
+🔴 Rule
+
+NoAssertionsInPageObjects
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Major
+Gate				❌ Fail
+
+💡 Pages must never assert — strict rule
+
+5️⃣ Page Object Size (SRP Violation)
+🔴 Rule
+
+SinglePageResponsibility
+
+🎯 Threshold
+Metric				Recommended
+Max methods			10–12
+Max fields			10
+Severity			Major
+Gate				⚠ Warn only (initially)
+
+💡 Why not fail?
+
+Legacy pages may be large
+Start as Code Smell, then enforce later
+
+6️⃣ Missing Wait Strategy Before Action
+🔴 Rule
+
+EnforceWaitStrategy
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Critical
+Gate				❌ Fail
+
+💡 Any click/type without wait is dangerous
+
+7️⃣ Hard-Coded Test Data in Page Objects
+🔴 Rule
+
+NoHardcodedTestDataInPages
+
+🎯 Threshold
+Metric				Value
+Allowed				≤ 1 (temporary)
+Severity			Minor → Major
+Gate				⚠ Warn
+
+💡 Useful during framework evolution
+
+8️⃣ Step Definitions Using WebDriver Directly
+🔴 Rule
+
+StepDefsShouldUsePagesOnly
+
+🎯 Threshold
+Metric			Value
+Allowed			0
+Severity		Major
+Gate			❌ Fail
+
+📌 Step defs = orchestration only
+
+9️⃣ Fluent / Explicit Wait Max Timeout
+🔴 Rule
+
+MaxWaitTimeout
+
+🎯 Threshold
+Metric			Value
+Max wait		20 seconds
+Severity		Minor
+Gate			⚠ Warn
+
+💡 Excessive waits hide performance issues
+
+📊 Summary Table (Interview Ready)
+Rule							Threshold	Severity	Gate
+Thread.sleep					0			Major		Fail
+Static WebDriver				0			Critical	Fail
+findElement outside POM			0			Major		Fail
+Assertions in Pages				0			Major		Fail
+Missing wait strategy			0			Critical	Fail
+Page size (methods)				>12			Major		Warn
+Hard-coded data					>1			Minor		Warn
+Max wait time					>20s		Minor		Warn
+
+
+🎯 Quality Gate Recommendation (Automation)
+
+FAIL BUILD if:
+
+Any Critical issue
+
+≥1 Major bug
+
+Code coverage < 60% (automation code)
+
+WARN only if:
+
+Code smells
+
+Maintainability issues
