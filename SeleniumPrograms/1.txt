@@ -1,0 +1,117 @@
+I want a selenium Java code which will fetch the input which is Available:  Html is below -   <div>
+            <button name="Not Available">Button 1</span>
+			<input name="text">Button</span>
+</div>
+ <div>
+            <button name="Available">Button 1</span>
+			<input name="text">Button</span>
+</div>
+ <div>
+            <button name="Available">Button 1</span>
+			<input name="text">Button</span>
+</div>
+
+Got it — you want Selenium Java code that fetches the <input> elements belonging only to the <div> blocks where the button has
+
+name="Available"
+
+
+This is a very common real-world locator problem (parent–child relationship filtering).
+
+Let’s cleanly solve it.
+
+✅ Correct XPath Strategy
+
+You want:
+
+👉 Find <div>
+👉 Inside it, find <button name='Available'>
+👉 From SAME div, fetch <input>
+
+XPath:
+//div[button[@name='Available']]//input
+
+
+This means:
+
+Select every div that contains a button with name=Available, then return its input.
+
+✅ Selenium Java Code
+List<WebElement> availableInputs = driver.findElements(
+    By.xpath("//div[button[@name='Available']]//input")
+);
+
+// Print or use inputs
+for(WebElement input : availableInputs) {
+    System.out.println(input.getText());
+}
+
+🔍 Explanation
+
+Your HTML logically becomes:
+
+DIV 1
+
+❌ button = Not Available → ignored
+
+DIV 2
+
+✅ button = Available → input fetched
+
+DIV 3
+
+✅ button = Available → input fetched
+
+So Selenium returns 2 input elements.
+
+⭐ Production-Ready Version (With Wait)
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+List<WebElement> inputs = wait.until(
+    ExpectedConditions.presenceOfAllElementsLocatedBy(
+        By.xpath("//div[button[@name='Available']]//input")
+    )
+);
+
+inputs.forEach(input ->
+    System.out.println(input.getAttribute("name"))
+);
+
+⚠ Important Notes (Senior Level)
+1️⃣ Your HTML has invalid closing tags
+
+You wrote:
+
+<button name="Available">Button 1</span>
+
+
+Should be:
+
+<button name="Available">Button 1</button>
+
+
+Same for input.
+
+2️⃣ <input> doesn’t have text
+
+So use:
+
+input.getAttribute("value");
+
+
+NOT:
+
+getText();
+
+🧠 Interview-Level Alternative Using Java Streams
+driver.findElements(By.xpath("//div"))
+      .stream()
+      .filter(div -> div.findElement(By.tagName("button"))
+                        .getAttribute("name")
+                        .equals("Available"))
+      .map(div -> div.findElement(By.tagName("input")))
+      .forEach(input -> System.out.println(input.getAttribute("name")));
+
+✅ Expected Output
+
+Returns inputs from 2 Available blocks.

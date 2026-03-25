@@ -1,0 +1,411 @@
+How to Test API Gateways Using Rest Assured (Java)
+1️⃣ What You Are Actually Testing in an API Gateway
+
+You are NOT testing business logic — you are testing cross-cutting concerns.
+
+Key Responsibilities to Validate
+
+	Authentication & Authorization
+	Routing
+	Rate Limiting & Throttling
+	Request / Response Transformation
+	Header Propagation
+	Aggregation
+	Error Handling
+	Resilience (timeouts, fallbacks)
+	Versioning
+	Security (CORS, IP blocking)
+
+2️⃣ Test Setup (Base Class)
+
+public class BaseGatewayTest {
+
+				@BeforeClass
+				public void setup() {
+					RestAssured.baseURI = "https://api.mycompany.com";
+				}
+			}
+
+3️⃣ Authentication & Authorization Testing 🔐
+			✅ Valid Token
+			given()
+			  .header("Authorization", "Bearer validToken")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(200);
+
+			❌ Missing Token
+			given()
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(401);
+
+			❌ Invalid Scope / Role
+			given()
+			  .header("Authorization", "Bearer userToken")
+			.when()
+			  .delete("/api/orders/123")
+			.then()
+			  .statusCode(403);
+
+
+		✔️ Gateway responsibility → Access control
+		✔️ Backend should never receive invalid requests
+
+4️⃣ Routing Validation 🚦
+			Ensure Correct Service is Hit
+			given()
+			  .header("Authorization", "Bearer token")
+			.when()
+			  .get("/api/users/10")
+			.then()
+			  .statusCode(200)
+			  .body("service", equalTo("USER-SERVICE"));
+
+
+		Backend may return a service identifier header or response field.
+
+5️⃣ Rate Limiting / Throttling 🚥
+
+			Example: 5 Requests Per Minute
+			for (int i = 1; i <= 6; i++) {
+				given()
+				  .header("Authorization", "Bearer token")
+				.when()
+				  .get("/api/products")
+				.then()
+				  .statusCode(i <= 5 ? 200 : 429);
+			}
+
+			Validate Rate Limit Headers
+			.then()
+			  .header("X-RateLimit-Remaining", notNullValue());
+
+6️⃣ Header Propagation Testing 📤
+
+			Gateway Adds Headers
+			
+			given()
+			  .header("Authorization", "Bearer token")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .header("X-Correlation-ID", notNullValue());
+
+Custom Headers Forwarded
+			given()
+			  .header("X-Client-Id", "mobile-app")
+			.when()
+			  .get("/api/orders")
+			.then()
+			  .statusCode(200);
+
+7️⃣ Request Transformation Testing 🔄
+
+Client Sends One Format → Backend Receives Another
+			given()
+			  .contentType(ContentType.JSON)
+			  .body("{ \"userId\": 10 }")
+			.when()
+			  .post("/api/createUser")
+			.then()
+			  .statusCode(201);
+
+
+✔️ Validate transformed response structure
+✔️ Validate required fields exist
+
+8️⃣ Response Transformation Testing
+			.then()
+			  .body("data.userId", notNullValue())
+			  .body("meta.timestamp", notNullValue());
+
+
+Gateway often wraps backend response into a standard envelope.
+
+9️⃣ API Aggregation Testing 🧩
+		Single API → Multiple Services
+		given()
+		  .header("Authorization", "Bearer token")
+		.when()
+		  .get("/api/dashboard")
+		.then()
+		  .statusCode(200)
+		  .body("orders", notNullValue())
+		  .body("payments", notNullValue())
+		  .body("products", notNullValue());
+
+Partial Failure Handling
+		.then()
+		  .body("payments", nullValue())
+		  .body("errors[0].service", equalTo("PAYMENT-SERVICE"));
+
+🔟 Timeout & Circuit Breaker Testing ⏱️
+Simulate Backend Timeout
+		given()
+		.when()
+		  .get("/api/slow-service")
+		.then()
+		  .statusCode(504);
+
+Fallback Response
+		.then()
+		  .body("message", equalTo("Service temporarily unavailable"));
+
+1️⃣1️⃣ Error Mapping Validation 🛑
+Backend Error	Gateway Response
+500	502 / 503
+404	404
+		Timeout	504
+		.then()
+		  .statusCode(503)
+		  .body("errorCode", equalTo("SERVICE_UNAVAILABLE"));
+
+1️⃣2️⃣ API Versioning Testing 🧬
+		Path Versioning
+		.get("/v1/api/orders")
+		.get("/v2/api/orders")
+
+		Header Versioning
+		given()
+		  .header("API-Version", "2")
+		.when()
+		  .get("/api/orders")
+		.then()
+		  .statusCode(200);
+
+1️⃣3️⃣ CORS Testing 🌐
+given()
+  .header("Origin", "https://evil.com")
+.when()
+  .options("/api/orders")
+.then()
+  .statusCode(403);
+
+1️⃣4️⃣ Contract Validation (Schema)
+.then()
+  .body(matchesJsonSchemaInClasspath("gateway-response-schema.json"));
+
+1️⃣5️⃣ Logging & Traceability Validation
+Response response =
+given()
+  .header("Authorization", "Bearer token")
+.when()
+  .get("/api/orders");
+
+String traceId = response.getHeader("X-Trace-Id");
+assertNotNull(traceId);
+
+1️⃣6️⃣ Negative Testing (Must Ask in Interview)
+
+Invalid headers
+Missing mandatory params
+Oversized payload
+SQL / XSS attempts
+Unsupported HTTP methods
+
+.when()
+  .patch("/api/orders")
+.then()
+  .statusCode(405);
+
+1️⃣7️⃣ How to Explain This in Interview (Perfect Answer)
+
+API Gateway testing focuses on validating cross-cutting concerns like authentication, routing, rate limiting, request/response transformation, aggregation, and error handling. Using Rest Assured, I test both positive and negative scenarios, validate headers, throttling behavior, fallback responses, and ensure backend services are protected from invalid requests.
+
+1️⃣8️⃣ What Interviewers LOVE to Hear ❤️
+
+✔ “Gateway should block before backend”
+✔ “Focus on headers and status codes”
+✔ “Rate limiting and security”
+✔ “Aggregation and fallback handling”
+
+1️⃣9️⃣ Common Mistake ❌
+
+Testing business logic at gateway level
+
+✔️ Business logic → service tests
+✔️ Cross-cutting concerns → gateway tests
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+What is an API Gateway? (Quick Recap)
+
+An API Gateway is a single entry point for all client requests to backend services.
+Instead of clients calling multiple microservices directly, they call one gateway, which:
+Routes requests
+Handles security
+Applies rate limits
+Transforms requests/responses
+Aggregates data
+
+🏦 Real-World Example: E-Commerce Application
+🔹 Microservices Landscape
+Client (Web / Mobile)
+        |
+        v
+    API Gateway
+        |
+        |--> User Service
+        |--> Product Service
+        |--> Order Service
+        |--> Payment Service
+
+🎯 Example Scenario: Load Order Details Page
+What the UI needs:
+
+User profile
+
+Order details
+
+Payment status
+
+❌ Without API Gateway (Bad)
+
+Client makes multiple calls:
+
+GET /users/123
+GET /orders/789
+GET /payments/789
+
+
+Problems:
+
+Tight coupling
+
+Multiple network calls
+
+Security duplicated everywhere
+
+✅ With API Gateway (Good)
+Single API call from client:
+GET /api/order-summary/789
+Authorization: Bearer <token>
+
+🔁 API Gateway internally calls:
+GET user-service/users/123
+GET order-service/orders/789
+GET payment-service/payments/789
+
+📦 Aggregated Response (from Gateway)
+{
+  "user": {
+    "id": "123",
+    "name": "Abhinav"
+  },
+  "order": {
+    "orderId": "789",
+    "status": "SHIPPED"
+  },
+  "payment": {
+    "method": "CARD",
+    "status": "SUCCESS"
+  }
+}
+
+
+✔ Client sees one API
+✔ Backend stays decoupled
+
+🔐 Security Example at API Gateway
+Authentication handled once
+Authorization: Bearer eyJhbGciOi...
+
+
+Gateway:
+
+Validates JWT
+
+Forwards request to services
+
+Blocks invalid tokens
+
+👉 Backend services don’t need to revalidate
+
+🚦 Rate Limiting Example
+API Gateway rule:
+100 requests / minute / user
+
+
+If exceeded:
+
+HTTP/1.1 429 Too Many Requests
+
+
+Backend services remain protected 🔒
+
+🔁 Protocol Transformation Example
+
+Client → JSON
+Backend → SOAP
+
+API Gateway:
+
+Converts JSON → SOAP
+Calls legacy SOAP service
+Converts SOAP → JSON
+
+✔ Enables modernization without rewriting legacy systems
+
+🧪 API Gateway Testing Example (Rest Assured)
+given()
+    .header("Authorization", "Bearer " + token)
+.when()
+    .get("/api/order-summary/789")
+.then()
+    .statusCode(200)
+    .body("order.status", equalTo("SHIPPED"))
+    .body("payment.status", equalTo("SUCCESS"));
+
+
+👉 You test business behavior, not individual services
+
+🌍 Popular API Gateway Implementations
+Gateway	Used With
+AWS API Gateway	AWS Lambda, microservices
+Kong	Kubernetes, enterprise
+Apigee	GCP, enterprise
+NGINX	Lightweight, high performance
+Spring Cloud Gateway	Java microservices
+Zuul (Netflix)	Legacy Spring setups
+🔍 Example: Spring Cloud Gateway Route
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order-service
+          uri: http://order-service
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+
+🧠 Interview-Ready One-Liners
+
+What is an API Gateway?
+
+A single entry point that manages routing, security, rate limiting, and aggregation for backend services.
+
+Why use it?
+
+To decouple clients from microservices and centralize cross-cutting concerns.
+
+Difference from Load Balancer?
+
+Load balancer distributes traffic; API Gateway applies business and security logic.
+
+🆚 API Gateway vs Load Balancer
+Feature	API Gateway	Load Balancer
+Routing	✔ Yes	✔ Yes
+Authentication	✔ Yes	❌ No
+Rate limiting	✔ Yes	❌ No
+Aggregation	✔ Yes	❌ No
+Protocol transform	✔ Yes	❌ No
+🧠 Final Summary
+
+An API Gateway acts as a façade for microservices, providing a single entry point that handles authentication, routing, rate limiting, aggregation, and transformation, simplifying client interactions and improving system security and scalability.

@@ -1,0 +1,306 @@
+What is Screenplay Pattern (Senior-Level View)
+
+In Serenity BDD, Screenplay replaces classic POM with:
+
+Actor → Ability → Task → Interaction → Question
+
+Instead of:
+
+Test → Step → Page
+
+Why Screenplay scales better?
+
+High reusability
+Low coupling
+Clear business readability
+Supports UI + API + DB in same test
+Easier parallel execution
+Better test isolation
+For enterprise microservices systems → Screenplay is superior.
+
+🧱 2️⃣ Enterprise Folder Structure
+src/test/java
+ ├── actors
+ ├── abilities
+ ├── tasks
+ ├── interactions
+ ├── questions
+ ├── ui
+ └── tests
+📦 3️⃣ Maven Dependencies
+<dependencies>
+    <dependency>
+        <groupId>net.serenity-bdd</groupId>
+        <artifactId>serenity-screenplay</artifactId>
+        <version>3.9.8</version>
+    </dependency>
+
+    <dependency>
+        <groupId>net.serenity-bdd</groupId>
+        <artifactId>serenity-screenplay-webdriver</artifactId>
+        <version>3.9.8</version>
+    </dependency>
+
+    <dependency>
+        <groupId>net.serenity-bdd</groupId>
+        <artifactId>serenity-junit</artifactId>
+        <version>3.9.8</version>
+    </dependency>
+</dependencies>
+🎭 4️⃣ Actor Setup
+package tests;
+
+import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.abilities.BrowseTheWeb;
+import net.serenitybdd.junit.runners.SerenityRunner;
+import net.thucydides.core.annotations.Managed;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
+import tasks.Login;
+import questions.LoginResult;
+
+import static net.serenitybdd.screenplay.GivenWhenThen.*;
+
+@RunWith(SerenityRunner.class)
+public class LoginTest {
+
+    @Managed
+    WebDriver driver;
+
+    Actor abhinav;
+
+    @Before
+    public void setUp() {
+        abhinav = Actor.named("Abhinav");
+        abhinav.can(BrowseTheWeb.with(driver));
+    }
+
+    @Test
+    public void user_should_login_successfully() {
+
+        givenThat(abhinav).wasAbleTo(
+                Login.withCredentials("admin", "password123")
+        );
+
+        then(abhinav).should(
+                seeThat(LoginResult.displayed(), 
+                        org.hamcrest.Matchers.equalTo(true))
+        );
+    }
+}
+🖥 5️⃣ UI Layer (Targets Only)
+
+No Page classes.
+
+package ui;
+
+import net.serenitybdd.screenplay.targets.Target;
+import org.openqa.selenium.By;
+
+public class LoginPage {
+
+    public static final Target USERNAME =
+            Target.the("username field")
+                    .located(By.id("username"));
+
+    public static final Target PASSWORD =
+            Target.the("password field")
+                    .located(By.id("password"));
+
+    public static final Target LOGIN_BUTTON =
+            Target.the("login button")
+                    .located(By.id("loginBtn"));
+
+    public static final Target DASHBOARD =
+            Target.the("dashboard label")
+                    .located(By.id("dashboard"));
+}
+
+Notice:
+
+No logic here.
+
+Only locators.
+
+Clean separation.
+
+🧠 6️⃣ Task Layer (Business Logic)
+package tasks;
+
+import net.serenitybdd.screenplay.Task;
+import net.serenitybdd.screenplay.actions.Open;
+import net.serenitybdd.screenplay.actions.Enter;
+import net.serenitybdd.screenplay.actions.Click;
+import ui.LoginPage;
+
+import static net.serenitybdd.screenplay.Tasks.instrumented;
+
+public class Login implements Task {
+
+    private final String username;
+    private final String password;
+
+    public Login(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public static Login withCredentials(String username, String password) {
+        return instrumented(Login.class, username, password);
+    }
+
+    @Override
+    public <T extends net.serenitybdd.screenplay.Actor> void performAs(T actor) {
+
+        actor.attemptsTo(
+                Open.url("https://example.com/login"),
+                Enter.theValue(username).into(LoginPage.USERNAME),
+                Enter.theValue(password).into(LoginPage.PASSWORD),
+                Click.on(LoginPage.LOGIN_BUTTON)
+        );
+    }
+}
+❓ 7️⃣ Question Layer (Validation)
+
+Assertions live here.
+
+package questions;
+
+import net.serenitybdd.screenplay.Question;
+import net.serenitybdd.screenplay.questions.Visibility;
+import ui.LoginPage;
+
+public class LoginResult {
+
+    public static Question<Boolean> displayed() {
+        return actor -> 
+            Visibility.of(LoginPage.DASHBOARD)
+                      .answeredBy(actor);
+    }
+}
+
+Now:
+
+Business logic = Task
+
+Validation = Question
+
+UI = Targets
+
+Test = readable scenario
+
+📊 8️⃣ What Serenity Report Shows
+
+In report:
+
+Abhinav attempts to Login with credentials
+✔ Opens URL
+✔ Enters username
+✔ Enters password
+✔ Clicks login button
+✔ Should see dashboard
+
+With:
+
+Screenshots
+
+Step timing
+
+Failure trace
+
+HTML report
+
+🔥 9️⃣ Adding API Task in Same Pattern
+
+Using Screenplay REST:
+
+import net.serenitybdd.screenplay.rest.interactions.Post;
+
+public class LoginViaAPI implements Task {
+
+    @Override
+    public <T extends Actor> void performAs(T actor) {
+
+        actor.attemptsTo(
+                Post.to("/api/login")
+                        .with(req -> req
+                                .body("{\"user\":\"admin\",\"pass\":\"123\"}")
+                                .header("Content-Type","application/json"))
+        );
+    }
+}
+
+Now same Actor can:
+
+Login via UI
+
+Login via API
+
+Validate via DB
+
+Verify Kafka message
+
+That’s enterprise power.
+
+🏗 1️⃣0️⃣ Enterprise Scaling Strategy (For You)
+
+If designing at Oracle scale:
+
+Add:
+
+Ability → CallAnApi
+
+Ability → QueryDatabase
+
+Ability → ReadFromKafka
+
+Retry strategy
+
+Parallel execution
+
+Docker grid
+
+Tag-based execution (@smoke, @regression)
+
+Environment config
+
+🧠 Why Screenplay Is Better for Large Teams
+Classic POM	Screenplay
+High coupling	Loosely coupled
+Steps duplicate logic	Reusable Tasks
+Hard to maintain	Modular
+UI heavy	Multi-layer capable
+Hard for API+UI mix	Designed for it
+🎯 When Should You Use Screenplay?
+
+Use it if:
+
+Automation team > 3 engineers
+
+Microservices architecture
+
+UI + API in same suite
+
+CI/CD maturity exists
+
+Long-term maintainability required
+
+Avoid if:
+
+Small POC project
+
+Team unfamiliar with layered design
+
+🏁 Senior-Level Recommendation
+
+If you’re designing framework at enterprise level:
+
+👉 Start directly with Screenplay
+👉 Avoid classic POM
+👉 Separate UI/API modules
+👉 Implement shared Task libraries
+👉 Integrate reporting in CI
+
+It becomes a test automation platform, not a framework.

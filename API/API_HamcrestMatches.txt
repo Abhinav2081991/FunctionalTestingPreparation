@@ -1,0 +1,275 @@
+1️⃣ Basic Body Assertion (Simple Field Match)
+Example JSON Response
+{
+  "id": 101,
+  "name": "Abhinav",
+  "age": 30,
+  "active": true
+}
+
+Code
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+
+given()
+    .baseUri("https://api.example.com")
+.when()
+    .get("/users/101")
+.then()
+    .statusCode(200)
+    .body("id", equalTo(101))
+    .body("name", equalTo("Abhinav"))
+    .body("age", greaterThan(25))
+    .body("active", is(true));
+
+✅ 2️⃣ Matching Nested JSON Fields
+JSON
+{
+  "user": {
+    "name": "Abhinav",
+    "address": {
+      "city": "Delhi"
+    }
+  }
+}
+
+Code
+.then()
+    .statusCode(200)
+    .body("user.name", equalTo("Abhinav"))
+    .body("user.address.city", equalTo("Delhi"));
+
+✅ 3️⃣ Validate Array Elements
+JSON
+{
+  "roles": ["ADMIN", "USER", "DEV"]
+}
+
+Code
+.then()
+    .statusCode(200)
+    .body("roles", hasSize(3))
+    .body("roles", hasItem("ADMIN"))
+    .body("roles", containsInAnyOrder("ADMIN", "USER", "DEV"));
+
+✅ 4️⃣ Validate List of Objects
+JSON
+[
+  { "id": 1, "name": "John" },
+  { "id": 2, "name": "David" }
+]
+
+Code
+.then()
+    .statusCode(200)
+    .body("id", hasItems(1, 2))
+    .body("name", hasItem("John"));
+
+
+Or using index:
+
+.then()
+    .body("[0].name", equalTo("John"));
+
+✅ 5️⃣ Advanced Matching with everyItem()
+.then()
+    .body("age", everyItem(greaterThan(18)));
+
+
+This ensures all elements in age list > 18.
+
+✅ 6️⃣ Matching Partial Text
+.then()
+    .body("message", containsString("success"));
+
+✅ 7️⃣ Combine Multiple Conditions
+.then()
+    .body("age", allOf(greaterThan(18), lessThan(60)));
+
+✅ 8️⃣ Validate JSON Path with Groovy Expressions
+
+Filter example:
+
+.then()
+    .body("findAll { it.age > 25 }.name", hasItem("Abhinav"));
+
+
+Very powerful for complex validations.
+
+🧠 Clean Enterprise Pattern (Reusable)
+
+Instead of chaining too many .body(), you can:
+
+Response response =
+    given()
+    .baseUri("https://api.example.com")
+    .when()
+    .get("/users/101");
+
+response.then()
+    .statusCode(200)
+    .body("name", equalTo("Abhinav"))
+    .body("age", greaterThan(25));
+
+⭐ Interview-Level Explanation
+
+You can say:
+
+In Rest Assured, Hamcrest matchers are used inside the body() method to validate JSON paths. We can use matchers like equalTo, hasItem, containsInAnyOrder, greaterThan, everyItem, and even Groovy expressions for filtering complex JSON arrays.
+
+If you'd like, I can next provide:
+
+✅ Real-world response validation for nested API (enterprise style)
+✅ JSON Schema validation example
+✅ Custom matcher example
+✅ Negative validation examples
+✅ Best practices for scalable API assertions
+
+Just tell me 👍
+
+give examples of multiple matches also
+
+Good — now let’s go deeper into multiple Hamcrest matchers in the same body validation using REST Assured.
+
+I’ll show:
+
+1️⃣ Multiple conditions on same field
+2️⃣ Multiple fields validated together
+3️⃣ Logical matchers (allOf, anyOf, both, either)
+4️⃣ Array + object combined validations
+5️⃣ Real-world enterprise style example
+
+✅ 1️⃣ Multiple Conditions on SAME Field (allOf)
+JSON
+{
+  "age": 30
+}
+
+Code
+.then()
+    .statusCode(200)
+    .body("age", allOf(greaterThan(18), lessThan(60)));
+
+
+👉 Validates age > 18 AND < 60.
+
+✅ 2️⃣ anyOf (OR Condition)
+.then()
+    .body("status", anyOf(equalTo("ACTIVE"), equalTo("PENDING")));
+
+
+👉 Passes if either matches.
+
+✅ 3️⃣ both() and either()
+
+More readable logical style:
+
+.then()
+    .body("age", both(greaterThan(18)).and(lessThan(60)));
+
+
+OR
+
+.then()
+    .body("status", either(equalTo("ACTIVE")).or(equalTo("PENDING")));
+
+✅ 4️⃣ Multiple Matchers in One body() Call (Enterprise Clean Style)
+
+Instead of chaining multiple .body() calls:
+
+.then()
+    .body(
+        "id", equalTo(101),
+        "name", startsWith("Abh"),
+        "age", allOf(greaterThan(20), lessThan(40)),
+        "active", is(true)
+    );
+
+
+Cleaner and faster to read in large test suites.
+
+✅ 5️⃣ Multiple Matches on Array
+JSON
+{
+  "roles": ["ADMIN", "USER", "DEV"]
+}
+
+Code
+.then()
+    .body("roles", hasSize(3))
+    .body("roles", hasItems("ADMIN", "USER"))
+    .body("roles", everyItem(notNullValue()));
+
+
+👉 Validates:
+
+size
+
+contains specific items
+
+none are null
+
+✅ 6️⃣ Multiple Validations in List of Objects
+JSON
+[
+  { "id": 1, "age": 25 },
+  { "id": 2, "age": 30 }
+]
+
+Code
+.then()
+    .body("id", hasItems(1, 2))
+    .body("age", everyItem(greaterThan(18)))
+    .body("age", everyItem(lessThan(60)));
+
+✅ 7️⃣ Combine Array + Nested + Logical Conditions
+JSON
+{
+  "users": [
+    { "name": "Abhinav", "age": 30 },
+    { "name": "John", "age": 28 }
+  ]
+}
+
+Code
+.then()
+    .body("users.name", hasItems("Abhinav", "John"))
+    .body("users.age", everyItem(allOf(greaterThan(20), lessThan(40))));
+
+✅ 8️⃣ Advanced: Filter + Multiple Matchers
+.then()
+    .body("users.findAll { it.age > 25 }.name",
+          hasItems("Abhinav", "John"));
+
+
+👉 Filters dynamically using Groovy expression.
+
+⭐ 9️⃣ Real Enterprise Example (Full Combined Validation)
+given()
+    .baseUri("https://api.example.com")
+.when()
+    .get("/users")
+.then()
+    .statusCode(200)
+    .body(
+        "size()", greaterThan(0),
+        "id", everyItem(notNullValue()),
+        "age", everyItem(greaterThan(18)),
+        "status", everyItem(anyOf(equalTo("ACTIVE"), equalTo("PENDING")))
+    );
+
+
+This validates:
+
+✔ List not empty
+✔ All IDs present
+✔ All users adults
+✔ Status values valid
+
+Clean and production-ready.
+
+🧠 Senior Interview Answer (Power Line)
+
+You can say:
+
+In Rest Assured, we can apply multiple Hamcrest matchers using allOf, anyOf, both/and, either/or, and everyItem. For large responses, I prefer grouping multiple JSON path validations inside a single body() call for better readability and maintainability.

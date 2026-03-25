@@ -1,0 +1,319 @@
+What does PATCH mean in contract testing?
+
+PATCH = partial update, so contracts usually validate:
+
+HTTP method = PATCH
+
+Path + path params
+
+Headers (Authorization, Content-Type)
+
+Partial request body (only changed fields)
+
+Response body (updated state / acknowledgment)
+
+WireMock is perfect for this because it supports:
+
+JSONPath matching
+
+Header matching
+
+Body pattern matching
+
+Priority & fallback stubs
+
+🔹 Basic WireMock PATCH Stub (Minimal)
+stubFor(patch(urlEqualTo("/users/123"))
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withHeader("Content-Type", "application/json")
+        .withBody("{\"message\":\"User updated successfully\"}")
+    )
+);
+
+
+✔ Works, but too weak for real contracts.
+
+🔹 Realistic PATCH Contract (Recommended)
+Scenario
+
+Update only email and status of a user.
+
+✅ WireMock PATCH Stub (With Validation)
+stubFor(patch(urlPathMatching("/users/\\d+"))
+    .withHeader("Authorization", equalTo("Bearer valid-token"))
+    .withHeader("Content-Type", containing("application/json"))
+
+    // ✅ Validate partial fields
+    .withRequestBody(matchingJsonPath("$.email"))
+    .withRequestBody(matchingJsonPath("$.status"))
+
+    .atPriority(1)
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withHeader("Content-Type", "application/json")
+        .withBody(
+            "{\n" +
+            "  \"id\": 123,\n" +
+            "  \"email\": \"updated@mail.com\",\n" +
+            "  \"status\": \"ACTIVE\",\n" +
+            "  \"updated\": true\n" +
+            "}"
+        )
+    )
+);
+
+❌ Fallback Stub (Invalid PATCH)
+stubFor(patch(urlPathMatching("/users/\\d+"))
+    .atPriority(10)
+    .willReturn(aResponse()
+        .withStatus(400)
+        .withHeader("Content-Type", "application/json")
+        .withBody("{\"error\":\"Invalid PATCH request\"}")
+    )
+);
+
+🔹 Rest Assured Client Call (PATCH)
+RestAssured.baseURI = "http://localhost:7776";
+
+String patchPayload =
+        "{\n" +
+        "  \"email\": \"updated@mail.com\",\n" +
+        "  \"status\": \"ACTIVE\"\n" +
+        "}";
+
+Response response = RestAssured
+        .given()
+        .header("Authorization", "Bearer valid-token")
+        .contentType("application/json")
+        .body(patchPayload)
+        .patch("/users/123");
+
+System.out.println(response.getStatusCode());
+System.out.println(response.getBody().asString());
+
+🧪 Expected Output
+{
+  "id": 123,
+  "email": "updated@mail.com",
+  "status": "ACTIVE",
+  "updated": true
+}
+
+🔹 Advanced PATCH Matching (Very Real-World)
+Validate field value (not just presence)
+.withRequestBody(matchingJsonPath("$.status", equalTo("ACTIVE")))
+
+Optional fields (PATCH-friendly)
+.withRequestBody(matchingJsonPath("$.email", absentOrNull()))
+
+Reject forbidden fields
+.withRequestBody(notMatching(".*\"password\".*"))
+
+🔹 PATCH with Path + Query Params
+stubFor(patch(urlPathEqualTo("/users/123"))
+    .withQueryParam("soft", equalTo("true"))
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withBody("{\"softUpdated\":true}")
+    )
+);
+
+
+Client:
+
+.patch("/users/123?soft=true");
+
+🔹 PATCH vs PUT in Contract Testing (Interview Gold)
+PATCH	PUT
+Partial update	Full replacement
+Fields optional	All fields required
+Safer for backward compatibility	Risky if contract changes
+JSONPath validation	Full body validation
+🔹 Best Practices for PATCH in WireMock
+
+✔ Use matchingJsonPath() (not full body match)
+✔ Validate only changed fields
+✔ Always add fallback stub
+✔ Use priorities
+✔ Avoid scenarios unless stateful workflow
+
+🧠 Interview-Ready One-Liner
+
+“For PATCH contracts in WireMock, I validate only the partial fields using JSONPath matchers instead of full body matching, ensuring backward compatibility and stable consumer contracts.”
+
+🚀 Want Next?
+
+I can show:
+
+PATCH + ETag / If-Match
+
+PATCH with JWT claim validation
+
+PATCH negative test matrix
+
+PATCH Cucumber step definitions
+
+PATCH contract → PACT migration
+
+Just say the word 👌
+
+How to add Jsonschemavalidation in this ?
+
+Perfect follow-up 👍
+JSON Schema validation is exactly what takes your WireMock + Rest Assured contract tests from “works” to “enterprise-grade”.
+
+I’ll show you how to add it cleanly, where it belongs, and why this is the right design.
+
+🔹 Where JSON Schema Validation fits in Contract Testing
+
+WireMock
+
+Validates request contract
+
+Controls response behavior
+
+Rest Assured
+
+Validates response contract
+
+Ensures structure, types, required fields
+
+➡️ Schema validation ALWAYS happens on the consumer side (Rest Assured)
+WireMock does not validate schemas — it stubs responses.
+
+🔹 Step 1: Add Maven Dependency
+<dependency>
+    <groupId>io.rest-assured</groupId>
+    <artifactId>json-schema-validator</artifactId>
+    <version>5.4.0</version>
+    <scope>test</scope>
+</dependency>
+
+
+⚠️ Version should match your Rest Assured version.
+
+🔹 Step 2: Create JSON Schema
+
+📁 src/test/resources/schemas/user_patch_response.schema.json
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "email", "status", "updated"],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "INACTIVE"]
+    },
+    "updated": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}
+
+
+✔ Enforces exact contract
+✔ Prevents accidental field leaks
+✔ Perfect for CI/CD
+
+🔹 Step 3: WireMock Stub (Same as Before)
+stubFor(patch(urlPathMatching("/users/\\d+"))
+    .withHeader("Authorization", equalTo("Bearer valid-token"))
+    .withHeader("Content-Type", containing("application/json"))
+    .withRequestBody(matchingJsonPath("$.email"))
+    .withRequestBody(matchingJsonPath("$.status"))
+    .willReturn(aResponse()
+        .withStatus(200)
+        .withHeader("Content-Type", "application/json")
+        .withBody(
+            "{\n" +
+            "  \"id\": 123,\n" +
+            "  \"email\": \"updated@mail.com\",\n" +
+            "  \"status\": \"ACTIVE\",\n" +
+            "  \"updated\": true\n" +
+            "}"
+        )
+    )
+);
+
+🔹 Step 4: Rest Assured + JSON Schema Validation
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+import static org.hamcrest.Matchers.*;
+
+String patchPayload =
+        "{\n" +
+        "  \"email\": \"updated@mail.com\",\n" +
+        "  \"status\": \"ACTIVE\"\n" +
+        "}";
+
+RestAssured
+    .given()
+        .header("Authorization", "Bearer valid-token")
+        .contentType("application/json")
+        .body(patchPayload)
+    .when()
+        .patch("/users/123")
+    .then()
+        .statusCode(200)
+        .body(matchesJsonSchemaInClasspath(
+            "schemas/user_patch_response.schema.json"
+        ));
+
+
+✔ Structure validated
+✔ Data types validated
+✔ Required fields enforced
+✔ Extra fields rejected
+
+🔹 Step 5: Negative Contract Example (Very Important)
+WireMock returns extra field (accidental change)
+{
+  "id": 123,
+  "email": "updated@mail.com",
+  "status": "ACTIVE",
+  "updated": true,
+  "debug": "internal"
+}
+
+
+❌ Test will FAIL because:
+
+"additionalProperties": false
+
+
+💥 This is how contract drift is caught early
+
+🔹 PATCH + Optional Fields Schema (Advanced)
+
+PATCH often has optional fields, response still strict.
+
+"email": { "type": ["string", "null"] }
+
+🔹 Validate Array Responses (Bonus)
+{
+  "type": "array",
+  "items": {
+    "$ref": "user_patch_response.schema.json"
+  }
+}
+
+🔹 Best Practices (Real Projects)
+
+✔ One schema per endpoint
+✔ Version schemas (v1, v2)
+✔ Store schemas in Git
+✔ Run in CI (fail fast)
+✔ Never inline schemas in code
+
+🧠 Interview-Grade Summary
+
+“WireMock validates request contracts, Rest Assured validates response contracts using JSON Schema. This separation ensures maintainable, backward-compatible API testing and prevents contract drift in CI/CD.”

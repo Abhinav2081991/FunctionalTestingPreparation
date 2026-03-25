@@ -1,0 +1,82 @@
+pipeline {
+    agent{
+      label 'AGENT'
+    } 
+    parameters{
+        choice(
+            name: 'BROWSER_SELECTION',
+            choices: ['CHROME','EDGE'],
+            description: 'Select Browsers'
+            )
+            
+        choice(
+            name: 'EXECUTION_MODE',
+            choices: ['LOCAL','GRID'],
+            )
+            
+        choice(
+            name: 'PLATFORM',
+            choices: ['WINDOWS', 'LINUX', 'MAC'],
+            )
+            
+        string(
+            name: 'GRID_URL',
+            defaultValue: 'http://10.92.7.36:1114',
+            description: 'Provide the grid url'
+            )
+    }
+    stages {
+        stage('validate parameters'){
+            steps{
+                script{
+                    if(params.EXECUTION_MODE=='GRID' && params.GRID_URL==''){
+                        error " GRID_URL must be given"
+                    }
+                    else if(params.PLATFORM=='WINDOWS' && params.BROWSER_SELECTION=='SAFARI'){
+                        error "Wrong browser and platform combination"
+                    }
+                }
+            }
+        }
+        
+        stage('Checkout from Git') {
+            steps {
+                // Get some code from a GitHub repository
+                git 'https://github.com/Abhinav2081991/SOLIDFramework.git'
+            }
+        }
+        
+        stage('Execute Code + Sonar Analysis') {
+            steps {
+        
+                    script{
+                        if(params.EXECUTION_MODE=='LOCAL' && params.PLATFORM=='WINDOWS'){
+                            withSonarQubeEnv('SONAR1') {
+                bat "mvn clean verify -Dexecution=${params.EXECUTION_MODE} -Dbrowser=${params.BROWSER_SELECTION} sonar:sonar"
+                }
+                        }
+                        else{
+                             withSonarQubeEnv('SONAR1') {
+                bat "mvn clean verify -Dexecution=${params.EXECUTION_MODE} -Dbrowser=${params.BROWSER_SELECTION} -DgridUrl=${params.GRID_URL} sonar:sonar"
+                }
+                        }
+                    }
+                
+            }
+
+            post {
+                always{
+                    cucumber buildStatus: 'UNCHANGED', customCssFiles: '', customJsFiles: '', failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/*.json', pendingStepsNumber: -1, reportTitle: 'cucumberReportsFromJenkins', skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
+                }
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                    echo 'test success'
+                }
+                failure{
+                    echo 'test failed'
+                }
+            }
+        }
+    }
+}

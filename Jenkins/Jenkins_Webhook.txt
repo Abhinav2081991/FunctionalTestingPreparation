@@ -1,0 +1,366 @@
+What is a Webhook in Jenkins?
+
+A webhook is a mechanism where an external system (GitHub/GitLab/Bitbucket) notifies Jenkins automatically when an event happens (push, PR, merge).
+
+📌 This eliminates polling and makes CI event-driven.
+
+🧱 High-Level Flow
+Developer pushes code
+        ↓
+Git webhook fires
+        ↓
+Jenkins receives event
+        ↓
+Declarative pipeline triggers
+        ↓
+Build / Test / Deploy runs
+
+✅ Supported SCMs (Most Common)
+
+GitHub
+
+GitLab
+
+Bitbucket
+
+Azure DevOps
+
+I’ll use GitHub as the reference (same idea everywhere).
+
+1️⃣ Jenkins Prerequisites
+Install Required Plugins
+
+Git
+Pipeline
+GitHub Integration
+GitHub Branch Source (recommended)
+
+2️⃣ Configure Webhook in GitHub
+Go to:
+Repo → Settings → Webhooks → Add webhook
+
+Set:
+Field	Value
+Payload URL	http://<jenkins-url>/github-webhook/
+Content type	application/json
+Events	Just the push event (or PRs)
+Active	✅
+
+📌 Jenkins endpoint must be publicly reachable (or via ngrok).
+
+3️⃣ Jenkins Job Configuration
+Option A: Multibranch Pipeline (BEST PRACTICE)
+
+✔ Auto-detects branches
+✔ Auto-triggers on webhook
+✔ CI-grade
+
+Steps:
+
+New Item → Multibranch Pipeline
+
+Add GitHub repository
+Credentials
+Enable:
+Build when a change is pushed
+
+Option B: Single Pipeline Job
+
+Pipeline → Git SCM
+
+Check:
+
+GitHub hook trigger for GITScm polling
+
+4️⃣ Declarative Pipeline (Jenkinsfile)
+Minimal Webhook-Triggered Pipeline
+pipeline {
+    agent any
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn verify'
+            }
+        }
+    }
+}
+
+
+✔ Triggered automatically by webhook
+✔ No polling
+✔ CI/CD ready
+
+5️⃣ Branch-Based Execution (VERY IMPORTANT)
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh 'mvn clean verify'
+            }
+        }
+
+        stage('Smoke Tests') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh 'mvn test -Dcucumber.filter.tags="@Smoke"'
+            }
+        }
+    }
+}
+
+
+📌 Enables branch-specific behavior.
+
+6️⃣ Webhook + Parameters (Advanced)
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'ENV', defaultValue: 'qa')
+    }
+
+    stages {
+        stage('Test') {
+            steps {
+                sh "mvn test -Denv=${params.ENV}"
+            }
+        }
+    }
+}
+
+
+Webhook triggers job → Jenkins uses defaults unless overridden.
+
+7️⃣ How Jenkins Knows It’s a Webhook Trigger
+
+Environment variables auto-injected:
+
+env.GIT_BRANCH
+env.GIT_COMMIT
+env.GIT_URL
+
+
+Example:
+
+echo "Triggered by commit: ${env.GIT_COMMIT}"
+
+🚨 Common Problems & Fixes
+Issue	Cause	Fix
+Webhook not firing	Jenkins not reachable	Use ngrok
+Job not triggered	Trigger not enabled	Enable GitHub hook
+Multiple builds	Poll + webhook	Disable polling
+Wrong branch built	Single pipeline	Use multibranch
+🧠 Senior-Level Best Practices
+
+✅ Use Multibranch Pipelines
+✅ Avoid SCM polling
+✅ Keep Jenkinsfile in repo
+✅ Separate CI vs CD stages
+✅ Fail fast on test failures
+
+🎤 Interview-Ready Answer (30 sec)
+
+“In Jenkins, webhooks trigger declarative pipelines automatically when SCM events occur. We configure the webhook in GitHub to call Jenkins’ endpoint and enable githubPush() or multibranch pipelines. This makes CI event-driven, faster, and more reliable than polling.”
+
+🔥 QA-Specific CI Use Case
+stage('Automation Tests') {
+    steps {
+        sh 'mvn verify -Dcucumber.filter.tags="@Regression"'
+    }
+}
+
+
+---------------------------------------------------------------
+
+What is a Webhook (Quick Context)
+
+A webhook is basically:
+
+👉 Git sends an HTTP POST request
+👉 to Jenkins
+👉 when an event happens (like push, PR, merge)
+
+✅ Prerequisites
+
+Before setting up:
+
+Jenkins should be running and accessible
+Your repo is on:
+GitHub OR
+GitLab OR
+Bitbucket
+Jenkins must be reachable from Git (public URL or via ngrok)
+🚀 Step-by-Step Setup (GitHub Example)
+🔧 Step 1: Install Required Plugins in Jenkins
+
+Go to:
+
+Manage Jenkins → Manage Plugins
+
+Install:
+
+Git Plugin (usually pre-installed)
+GitHub Integration Plugin
+🔧 Step 2: Create a Jenkins Job
+Go to Jenkins Dashboard
+Click New Item
+Choose:
+Freestyle Project OR Pipeline
+Configure:
+Source Code Management → Git
+Add repo URL
+Add credentials (if private repo)
+🔧 Step 3: Enable Webhook Trigger
+
+Inside job config:
+
+✔ Tick:
+
+GitHub hook trigger for GITScm polling
+
+👉 This tells Jenkins to listen for webhook events
+
+🔧 Step 4: Configure Webhook in GitHub
+
+Go to your repo:
+
+Settings → Webhooks → Add Webhook
+
+Fill:
+
+📌 Payload URL
+http://<your-jenkins-url>/github-webhook/
+
+Example:
+
+http://your-domain.com/github-webhook/
+📌 Content Type
+application/json
+📌 Events
+
+Choose:
+
+✅ Just the push event (recommended)
+OR
+Send me everything
+📌 Save Webhook
+🔧 Step 5: Test It
+Make a code change
+Push to repo:
+git commit -m "test webhook"
+git push
+
+👉 Jenkins job should trigger automatically 🎉
+
+🔍 How to Verify It’s Working
+In GitHub:
+Go to Webhook → “Recent Deliveries”
+Check:
+Status = 200 ✅
+In Jenkins:
+Go to job → Build History
+Check if build triggered automatically
+⚠️ Common Issues & Fixes
+❌ 1. Jenkins Not Accessible
+
+👉 GitHub cannot reach local Jenkins
+
+Fix:
+Use:
+ngrok
+OR expose Jenkins via public URL
+❌ 2. Wrong URL
+
+Correct endpoint:
+
+/github-webhook/
+
+NOT:
+
+/git-webhook/
+❌ 3. Firewall Blocking
+
+Ensure:
+
+Port 8080 (or your Jenkins port) is open
+❌ 4. Missing Trigger Config
+
+Ensure checkbox is enabled:
+
+GitHub hook trigger for GITScm polling
+❌ 5. Credentials Issue
+
+Private repo needs:
+
+Username + Token OR SSH key
+🧠 Advanced (Real Enterprise Setup)
+
+As a QA Lead, this is what teams usually do:
+
+🔹 Pipeline Script Example
+pipeline {
+    agent any
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/your-repo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building...'
+            }
+        }
+    }
+}
+🔹 Use Case in Testing
+
+Webhook → triggers:
+
+Selenium tests
+API tests (Rest Assured)
+Performance tests (JMeter)
+Reports generation
+🔥 Pro Tips (From Industry Practice)
+Use branch filtering (only trigger on main or release)
+Combine with:
+PR checks
+SonarQube analysis
+Avoid polling → Webhooks are faster & efficient
+💬 Summary
+Webhook = Git → Jenkins trigger
+Configure in:
+Jenkins (enable trigger)
+Git (add webhook URL)
+Ensure Jenkins is accessible
+Push code → build auto triggers

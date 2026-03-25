@@ -1,0 +1,87 @@
+Jenkins is blocking your inline JavaScript because of its Content Security Policy (CSP), which is intentionally strict to prevent XSS attacks. Relaxing it is possible, but you should understand the trade-offs first.
+
+🔴 Why This Happens
+
+Jenkins sets a CSP header like:
+
+script-src 'self';
+
+This blocks inline JS (<script>...</script>) and onclick handlers, which is why you see:
+
+Inline JS blocked due to Content Security Policy
+
+✅ Recommended Approach (Best Practice)
+
+Instead of relaxing CSP:
+
+✔ Move inline JS to external files
+✔ Avoid onclick, use addEventListener
+✔ Use Jenkins-approved plugins/UI patterns
+
+👉 This keeps Jenkins secure (important in CI/CD environments)
+
+⚠️ If You Still Want to Relax CSP
+
+You can override CSP via JVM system property.
+
+🔧 Option 1: Modify Jenkins Startup (Most Common)
+
+Add this JVM argument:
+
+-Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; default-src 'self' 'unsafe-inline' 'unsafe-eval';"
+🪟 If Jenkins is running on Windows (service)
+
+Open:
+
+jenkins.xml
+
+Find:
+
+<arguments>
+
+Add inside:
+
+-Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; default-src 'self' 'unsafe-inline' 'unsafe-eval';"
+Restart Jenkins service
+🐧 If running via command line / Linux
+java -Dhudson.model.DirectoryBrowserSupport.CSP="sandbox allow-scripts; default-src 'self' 'unsafe-inline' 'unsafe-eval';" -jar jenkins.war
+🐳 If using Docker
+docker run -p 8080:8080 \
+  -e JAVA_OPTS="-Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; default-src 'self' 'unsafe-inline' 'unsafe-eval';\"" \
+  jenkins/jenkins:lts
+🟡 Safer Relaxed Policy (Better than fully open)
+
+Instead of fully allowing everything, you can use:
+
+sandbox allow-scripts; default-src 'self'; script-src 'self' 'unsafe-inline';
+
+👉 Avoid 'unsafe-eval' unless absolutely required
+
+🚨 Important Security Warning
+
+Relaxing CSP:
+
+❌ Opens door to XSS attacks
+❌ Risky if Jenkins is exposed to internet
+❌ Dangerous in shared environments
+
+👉 In enterprise setups (like yours as a QA Lead), this is usually NOT allowed in production
+
+🧠 Real-World Recommendation (What teams actually do)
+
+In most companies:
+
+CSP is not relaxed
+Instead:
+Use custom Jenkins plugins
+Use HTML Publisher Plugin with safe JS
+Or host UI externally (React app, report portal, etc.)
+🔍 Quick Debug Tip
+
+To confirm CSP issue:
+
+Open browser DevTools → Console
+
+Look for:
+
+Refused to execute inline script because it violates CSP

@@ -1,0 +1,353 @@
+What Does “Threshold” Mean in SonarQube?
+
+A threshold defines:
+
+- When a rule should raise an issue
+- How severe that issue is
+- When it should fail the Quality Gate
+
+Bad thresholds = noisy Sonar → ignored by teams
+
+Good thresholds = trusted Sonar → enforced in CI
+
+🧠 Rule Threshold Strategy (Selenium Automation)
+
+1️⃣ Thread.sleep() Usage
+	🔴 Rule
+
+	AvoidThreadSleepInTests
+
+	🎯 Threshold
+	Metric				Value
+	Allowed				0 occurrences
+	Severity			Major
+	Quality Gate		❌ Fail if ≥ 1
+
+	💡 Why?
+
+	Even one Thread.sleep() is harmful
+	No legitimate use in automation frameworks
+
+2️⃣ Direct driver.findElement() Outside Pages
+🔴 Rule
+
+NoFindElementOutsidePageObject
+
+🎯 Threshold  --
+Metric					Value
+Allowed					0 in steps, tests
+Severity				Major
+Gate					❌ Fail if ≥ 1
+
+📌 Exception:
+Allowed inside pages.* only
+
+
+
+3️⃣ Static WebDriver Declaration
+🔴 Rule
+
+NoStaticWebDriver
+
+🎯 Threshold
+Metric					Value
+Allowed					0
+Severity				Critical
+Gate					❌ Immediate fail
+
+💥 Parallel execution killer
+
+4️⃣ Assertions Inside Page Objects
+🔴 Rule
+
+NoAssertionsInPageObjects
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Major
+Gate				❌ Fail
+
+💡 Pages must never assert — strict rule
+
+5️⃣ Page Object Size (SRP Violation)
+
+🔴 Rule
+
+SinglePageResponsibility
+
+🎯 Threshold
+Metric				Recommended
+Max methods			10–12
+Max fields			10
+Severity			Major
+Gate				⚠ Warn only (initially)
+
+💡 Why not fail?
+
+Legacy pages may be large
+Start as Code Smell, then enforce later
+
+6️⃣ Missing Wait Strategy Before Action
+🔴 Rule
+
+EnforceWaitStrategy
+
+🎯 Threshold
+Metric				Value
+Allowed				0
+Severity			Critical
+Gate				❌ Fail
+
+💡 Any click/type without wait is dangerous
+
+7️⃣ Hard-Coded Test Data in Page Objects
+🔴 Rule
+
+NoHardcodedTestDataInPages
+
+🎯 Threshold
+Metric				Value
+Allowed				≤ 1 (temporary)
+Severity			Minor → Major
+Gate				⚠ Warn
+
+💡 Useful during framework evolution
+
+8️⃣ Step Definitions Using WebDriver Directly
+🔴 Rule
+
+StepDefsShouldUsePagesOnly
+
+🎯 Threshold
+Metric			Value
+Allowed			0
+Severity		Major
+Gate			❌ Fail
+
+📌 Step defs = orchestration only
+
+9️⃣ Fluent / Explicit Wait Max Timeout
+🔴 Rule
+
+MaxWaitTimeout
+
+🎯 Threshold
+Metric			Value
+Max wait		20 seconds
+Severity		Minor
+Gate			⚠ Warn
+
+💡 Excessive waits hide performance issues
+
+📊 Summary Table (Interview Ready)
+
+Rule							Threshold	Severity	Gate
+Thread.sleep					0			Major		Fail
+Static WebDriver				0			Critical	Fail
+findElement outside POM			0			Major		Fail
+Assertions in Pages				0			Major		Fail
+Missing wait strategy			0			Critical	Fail
+Page size (methods)				>12			Major		Warn
+Hard-coded data					>1			Minor		Warn
+Max wait time					>20s		Minor		Warn
+
+
+🎯 Quality Gate Recommendation (Automation)
+
+FAIL BUILD if:
+
+Any Critical issue
+
+≥1 Major bug
+
+Code coverage < 60% (automation code)
+
+WARN only if:
+
+Code smells
+
+Maintainability issues
+
+
+------------------------------------------------------------------------------------------------------------
+
+Thread.sleep → FAIL if found
+Best Option: Built-in Rule
+
+Sonar already has:
+
+java:S2925 – "Thread.sleep" should not be used  --> Already Rule is there. 
+
+Configure
+Activate rule
+
+Severity → Major
+
+Add to Quality Gate → Fail on new issues
+
+✅ Done in 2 minutes.
+
+
+
+2️⃣ Static WebDriver → CRITICAL FAIL
+XPath Rule (Java)
+
+Why XPath works: static WebDriver driver; is syntactic.
+
+Rule Creation
+Rules → Java → Create Rule → XPath
+
+XPath Expression
+//FIELD_DECLARATION[
+  contains(., "static") 
+  and contains(., "WebDriver")
+]
+
+Configuration
+Setting	Value
+Severity	Critical
+Threshold	0
+Gate	Fail
+3️⃣ findElement Outside POM → MAJOR FAIL
+
+🚨 This cannot be done reliably with regex/XPath
+
+Why?
+
+Sonar must know:
+
+Is this class a Page Object?
+
+Is findElement() used inside test or step files?
+
+✅ Correct Solution: Custom Java Rule (Plugin)
+Logic (AST-based)
+IF methodInvocation.name == "findElement"
+AND class does NOT:
+   - extend BasePage
+   - OR belong to *.pages.* package
+THEN raise issue
+
+Tools Needed
+
+sonar-java-plugin
+
+JavaParser / Sonar Java API
+
+Severity
+Setting	Value
+Severity	Major
+Gate	Fail
+
+💡 This is a strong interview-worthy customization.
+
+4️⃣ Assertions in Page Classes → MAJOR FAIL
+XPath-based (Good enough)
+XPath
+//METHOD_INVOCATION[
+ contains(@methodName,'assert')
+ or contains(@methodName,'Assert')
+]
+
+Scope Limitation
+
+Apply only to:
+
+**/pages/**
+
+Why it works
+
+Assertions (assertTrue, Assertions.assertThat)
+Should only be in test layers
+
+5️⃣ Missing Wait Strategy → CRITICAL FAIL
+
+🚨 Again — needs AST analysis
+
+Rule Definition
+
+If a class:
+
+Uses findElement
+
+AND does not use:
+
+WebDriverWait
+
+ExpectedConditions
+
+Custom WaitStrategy
+
+→ Raise issue
+
+Pseudocode
+if (usesFindElement && !usesWait) {
+   reportIssue();
+}
+
+Why XPath fails
+
+You must correlate method calls, not just match text.
+
+6️⃣ Page Size (Methods > 12) → WARN
+Built-in Rule
+java:S1541 – Methods should not be too complex
+
+
+or
+
+java:S1450 – Too many methods
+
+Configure
+Setting	Value
+Max Methods	12
+Severity	Major
+Gate	Warn
+7️⃣ Hard-coded Data (>1) → WARN
+Built-in Rules
+
+java:S1192 – String literals duplication
+
+java:S109 – Magic numbers
+
+Or XPath
+//LITERAL[@value and not(contains(@value,"http"))]
+
+
+Exclude:
+
+constants
+
+enums
+
+8️⃣ Max Wait Time > 20s → WARN
+XPath Rule
+//CLASS_INSTANCE_CREATION[
+ contains(., "WebDriverWait") 
+ and contains(., "Duration.ofSeconds")
+]
+
+Add condition
+
+Manual review or plugin enhancement to extract value:
+
+Duration.ofSeconds(30)
+
+Severity
+Setting	Value
+Severity	Minor
+Gate	Warn
+🔐 Quality Gate Configuration
+
+Create Automation Gate
+
+Condition	Threshold	Action
+Critical Issues	>0	❌ Fail
+Major Issues	>0	❌ Fail
+Minor Issues	>5	⚠ Warn
+🔥 What Interviewers Love Hearing
+
+“We created custom SonarQube Java rules to enforce Page Object discipline, wait strategy usage, and prevent Selenium anti-patterns like static drivers and assertions in pages.”
+
+That’s L4 / Principal-level quality governance talk.

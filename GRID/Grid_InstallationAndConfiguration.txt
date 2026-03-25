@@ -1,0 +1,82 @@
+Navigate to Path where selenium-server-<version>.jar is present
+
+EXecute command to start the hub- 
+
+java -jar selenium-server-<version>.jar hub --port 1111    
+
+Hub IP - http://192.168.1.13:1111
+
+If hub is not using default ports - 
+
+java -jar selenium-server-4.40.0.jar hub --publish-events tcp://10.92.7.36:1112 --subscribe-events tcp://10.92.7.36:1113 --port 1114
+
+
+Now Selenium Hub will be running on  - http://192.168.1.13:1114
+
+
+Now Start the node  - 
+
+java -jar selenium-server-4.40.0.jar node --publish-events tcp://10.92.7.36:1112 --subscribe-events tcp://10.92.7.36:1113
+
+
+----------------------------------------------------------------------------------------------------------
+
+OPTION 1: Start Hub & Node using Shell commands in Jenkins pipeline (MOST COMMON)
+🔹 Pre-requisite
+
+selenium-server-<version>.jar available on Jenkins agent
+
+Java installed
+
+Ports open (4444, 5555, etc.)
+
+✅ Declarative Jenkins Pipeline (Recommended)
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Start Selenium Grid Hub') {
+            steps {
+                sh '''
+                nohup java -jar /<path of jar in agent node>/selenium-server-4.18.1.jar hub \
+                --port 4444 > hub.log 2>&1 &
+                '''
+            }
+        }
+
+        stage('Start Selenium Grid Node') {
+            steps {
+                sh '''
+                nohup java -jar /<path of jar in agent node>/selenium-server-4.18.1.jar node \
+                --hub http://localhost:4444 \
+                --port 5555 > node.log 2>&1 &
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'pkill -f selenium-server'
+        }
+    }
+}
+
+✔ What this does
+
+Starts Hub
+
+Registers Node
+
+Runs tests
+
+Cleans up Grid after execution
+
+💡 nohup + & ensures Grid keeps running in background.

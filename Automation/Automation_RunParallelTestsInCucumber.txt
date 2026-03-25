@@ -1,0 +1,53 @@
+
+1. Override "scenarios"  Method in testRunner class
+
+	@Override
+    @DataProvider(parallel = true)  --> this will run tests in parallel.
+    public Object[][] scenarios() {
+        return super.scenarios();
+    }
+
+
+2. in pom.xml under maven-surefire-plugin we need to add a configuration - 
+
+				<plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                    <configuration>
+                        <parallel>methods</parallel>
+                        <threadCount>2</threadCount>
+                        <testFailureIgnore>true</testFailureIgnore>
+                    </configuration>
+                </plugin>
+				
+				Works well with AbstractTestNGCucumberTests + DataProvider.
+				
+
+3.  Feature-level Parallelism
+
+Each feature file runs in a separate thread.
+
+Ideal for large test suites with multiple feature files.
+
+Often used with JUnit 5 or Cucumber Parallel plugin.
+
+JUnit 5 Example (using maven-cucumber-parallel-plugin):
+
+		<plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>cucumber-maven-plugin</artifactId>
+			<version>5.7.0</version>
+			<executions>
+				<execution>
+					<id>parallel-features</id>
+					<phase>test</phase>
+					<goals>
+						<goal>parallel</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+
+
+Generates one runner per feature → runs features in parallel.

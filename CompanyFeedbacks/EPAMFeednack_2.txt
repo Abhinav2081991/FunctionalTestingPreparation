@@ -1,0 +1,17 @@
+Overall 15 years of experience in software testing. Key points from 100 min technical discussion with the candidate.
+
+Strong Points:
+1. Good hands-on UI automation experience using WebDriver and Java
+2. Some hands-on experience with PlayWright and Java
+3. Decent hands-on API automation experience using RestAssured and Java
+4. Has some API Mocking experience using WireMock5.  Decent understanding of framework layers and some hands-on framework development experience
+6. Exposure to few object-oriented design patterns & design principles like SOLID
+7. Experience with static code analysis with SonarQube and some familiarity with code coverage tool like Jacoco
+8. Good understanding of test strategy and planning aspects and contributed in those areas
+9. Decent understanding of CI/CD pipeline stages, deployment strategies & hands-on with Jenkins pipeline
+10. Good communication skill and decent team leading experience
+
+Weak Points:
+1. Limited hands-on with Stream API and Lambda Expression and average Java collection usage skill at present
+2. No hands-on working experience with any BDD based framework
+

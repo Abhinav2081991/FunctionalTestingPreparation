@@ -1,0 +1,266 @@
+Practical Examples of Microservices Testing (Real-World)
+
+Microservices testing is NOT “run some APIs and done”.
+It’s about testing in layers, controlling blast radius, and catching failures early.
+
+🧱 Typical Microservices Architecture (Context)
+UI / Mobile
+   ↓
+API Gateway
+   ↓
+Order Service ──▶ Payment Service ──▶ Notification Service
+   ↓
+Inventory Service
+
+
+Each service:
+
+Independently deployed
+
+Own database
+
+Own CI pipeline
+
+🧪 1️⃣ Unit Testing (Service-Internal Logic)
+🎯 Goal
+
+Test business logic inside a single service, no network, no DB.
+
+🔹 Example: Order Service – Price Calculation
+@Test
+void shouldCalculateOrderTotal() {
+    OrderService service = new OrderService();
+    double total = service.calculateTotal(100, 2, 10);
+    assertEquals(190, total);
+}
+
+
+✔ Fast
+✔ No dependencies
+✔ Uses mocks/stubs
+
+🔹 What to Mock?
+
+Repositories
+
+External API clients
+
+Message producers
+
+📌 Mockito is perfect here
+
+🧪 2️⃣ Contract Testing (Consumer ↔ Provider)
+🎯 Goal
+
+Ensure API agreement between services.
+
+🔹 Example: Order → Payment
+Consumer Expectation
+{
+  "status": "SUCCESS",
+  "transactionId": "string"
+}
+
+Pact Consumer Test
+@Pact(consumer = "order-service")
+RequestResponsePact paymentContract(PactDslWithProvider builder) {
+    return builder
+        .uponReceiving("payment request")
+        .path("/pay")
+        .method("POST")
+        .willRespondWith()
+        .status(200)
+        .body(new PactDslJsonBody()
+              .stringType("status")
+              .stringType("transactionId"))
+        .toPact();
+}
+
+Provider Verification
+
+Payment service must satisfy this contract in CI.
+
+✔ Prevents breaking changes
+✔ No full environment needed
+✔ CI-safe
+
+📌 This is NON-negotiable in microservices
+
+🧪 3️⃣ API Integration Testing (Service + DB)
+🎯 Goal
+
+Validate service behavior with its real DB and config.
+
+🔹 Example: Inventory Service
+given()
+  .body(itemPayload)
+.when()
+  .post("/inventory")
+.then()
+  .statusCode(201)
+  .body("itemId", notNullValue());
+
+
+✔ Real DB (Docker/Testcontainers)
+✔ No downstream services
+
+🔹 Tools
+
+Rest Assured
+
+Testcontainers
+
+H2/Postgres container
+
+🧪 4️⃣ Message/Event Testing (Kafka / RabbitMQ)
+🎯 Goal
+
+Validate asynchronous communication.
+
+🔹 Example: Order Created Event
+@Test
+void shouldPublishOrderCreatedEvent() {
+    orderService.createOrder(order);
+    ConsumerRecord<String, OrderEvent> record = kafkaConsumer.poll();
+    assertEquals("ORDER_CREATED", record.value().getType());
+}
+
+
+✔ Event schema correctness
+✔ Message published once
+✔ Retry/idempotency checks
+
+📌 Often missed by junior teams
+
+🧪 5️⃣ Component Testing (Service + Real Dependencies)
+🎯 Goal
+
+Test a service with real downstream services but controlled.
+
+🔹 Example
+
+Order Service + Payment Service (real)
+Inventory mocked
+
+docker-compose up order payment
+
+
+✔ Validates service collaboration
+✔ Smaller scope than E2E
+
+🧪 6️⃣ End-to-End Testing (Critical Business Flow)
+🎯 Goal
+
+Validate one or two critical flows only.
+
+🔹 Example: Place Order Flow
+Create Order → Pay → Reduce Inventory → Send Email
+
+given()
+  .body(order)
+.when()
+  .post("/orders")
+.then()
+  .statusCode(200);
+
+
+✔ Very limited
+✔ High maintenance
+❌ Do NOT overdo
+
+📌 5–10 E2E tests max in mature orgs
+
+🧪 7️⃣ Resilience & Failure Testing
+🎯 Goal
+
+Verify system behavior under failures.
+
+🔹 Example: Payment Down
+when(paymentClient.pay()).thenThrow(new TimeoutException());
+
+
+Expect:
+
+Order marked PENDING
+
+Retry scheduled
+
+No data corruption
+
+✔ Circuit breaker behavior
+✔ Retry logic
+✔ Fallbacks
+
+🧪 8️⃣ Performance Testing (Service-Level)
+🎯 Goal
+
+Test each service independently.
+
+🔹 Example
+
+Order Service handles 1k RPS
+
+Payment handles 500 RPS
+
+Tools:
+
+JMeter
+
+Gatling
+
+k6
+
+🧪 9️⃣ Security Testing (API Level)
+🎯 Goal
+
+Validate auth, roles, token propagation.
+
+🔹 Example
+given()
+  .header("Authorization", "Bearer invalid")
+.when()
+  .get("/orders")
+.then()
+  .statusCode(401);
+
+
+✔ JWT expiry
+✔ Role-based access
+✔ Service-to-service auth
+
+🧪 🔟 Data Consistency & Idempotency
+🎯 Goal
+
+Ensure eventual consistency.
+
+🔹 Example: Duplicate Order Request
+POST /orders (same idempotency key)
+
+
+Expected:
+
+No duplicate order
+
+Same response returned
+
+✔ Critical in distributed systems
+
+🧠 Microservices Test Pyramid (Practical)
+		E2E (very few)
+		Component Tests
+		Contract Tests (mandatory)
+		Integration Tests
+		Unit Tests (most)
+
+🧠 Key Mistakes Teams Make
+Mistake	Fix
+Too many E2E tests				Push down to contracts
+Over-mocking					Use contracts
+No async testing				Test events explicitly
+Shared DB						Strict DB per service
+
+
+🏆 Interview-Ready Summary
+
+“In microservices, testing shifts left.
+We rely heavily on unit + contract tests, keep E2E minimal, and test resilience, events, and contracts as first-class citizens.”

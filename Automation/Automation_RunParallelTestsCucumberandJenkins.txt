@@ -1,0 +1,159 @@
+Prerequisites
+
+Selenium tests with Cucumber (feature files + step definitions)
+
+Thread-safe WebDriver (ThreadLocal)
+
+TestNG runner with DataProvider or JUnit 5 parallel support
+
+Maven project
+
+Jenkins installed with Maven and Java configured
+
+2️⃣ Thread-Safe Selenium for Parallel Execution
+
+When running in parallel, each thread needs its own browser instance. Use ThreadLocal WebDriver.
+
+public class DriverManager {
+
+    private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+
+    public static void setDriver(WebDriver driverInstance) {
+        driver.set(driverInstance);
+    }
+
+    public static WebDriver getDriver() {
+        return driver.get();
+    }
+
+    public static void quitDriver() {
+        if (driver.get() != null) {
+            driver.get().quit();
+            driver.remove();
+        }
+    }
+}
+
+
+Usage in Step Definitions / Pages:
+
+WebDriver driver = DriverManager.getDriver();
+
+3️⃣ TestNG Runner with Parallel Scenarios
+@CucumberOptions(
+        features = "src/test/resources/features",
+        glue = "stepDefinitions",
+        plugin = {"pretty", "html:target/cucumber-report.html"}
+)
+public class TestRunner extends AbstractTestNGCucumberTests {
+
+    @Override
+    @DataProvider(parallel = true)
+    public Object[][] scenarios() {
+        return super.scenarios();  // Each scenario runs in a separate thread
+    }
+}
+
+
+✅ This allows scenario-level parallel execution.
+
+4️⃣ Maven Surefire Plugin Configuration for Jenkins
+
+Configure parallel execution in Maven (methods/scenarios):
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.1.2</version>
+            <configuration>
+                <parallel>methods</parallel> <!-- or scenarios for TestNG -->
+                <threadCount>4</threadCount>
+                <forkCount>1</forkCount>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
+
+ThreadCount = number of concurrent browser sessions.
+
+5️⃣ Jenkins Job for Parallel Execution
+
+Create a New Jenkins Job
+
+Freestyle or Pipeline
+
+Configure Source Code Management (Git)
+
+Build Steps
+
+Maven command for running tests in parallel:
+
+mvn clean test -Dsurefire.parallel=methods -Dsurefire.threadCount=4
+
+
+Post-build Actions
+
+Publish Cucumber HTML reports
+
+cucumber build step (using plugins like Cucumber Reports Plugin)
+
+6️⃣ Optional: Use Docker Grid / Selenium Grid for True Parallelism
+
+Local threads are fine for a few browsers.
+
+For large scale: Run tests on Selenium Grid / Docker Grid.
+
+Each thread points to a different remote WebDriver session.
+
+DesiredCapabilities caps = new DesiredCapabilities();
+caps.setBrowserName("chrome");
+
+WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), caps);
+DriverManager.setDriver(driver);
+
+7️⃣ Thread Safety Checklist for Parallelism
+
+WebDriver → ThreadLocal
+
+PageObjects → Never store state; create per scenario
+
+TestContext → ThreadLocal
+
+Reports → Each thread writes to separate folders to avoid conflicts
+
+8️⃣ Example Jenkins Pipeline Script (Declarative)
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/your-repo/selenium-cucumber.git'
+            }
+        }
+        stage('Build & Test') {
+            steps {
+                sh 'mvn clean test -Dsurefire.parallel=methods -Dsurefire.threadCount=4'
+            }
+        }
+        stage('Publish Reports') {
+            steps {
+                cucumber buildStatus: 'UNSTABLE', jsonReportDirectory: 'target/cucumber-reports'
+            }
+        }
+    }
+}
+
+
+✅ This will run Cucumber + Selenium scenarios in parallel in Jenkins and publish reports.
+
+9️⃣ Summary
+Step	Description
+1	Make WebDriver ThreadLocal
+2	Use TestNG DataProvider or JUnit5 parallel for scenario execution
+3	Configure Maven Surefire plugin for threads
+4	Jenkins: Run Maven command
+5	Optional: Use Selenium Grid for multiple machines/browsers
+6	Ensure PageObjects, TestContext, and Reports are thread-safe

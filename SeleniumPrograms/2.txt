@@ -1,0 +1,164 @@
+Exercise 1 — Click All “Available” Buttons
+HTML
+<div>
+  <button name="Available">A</button>
+</div>
+<div>
+  <button name="Not Available">B</button>
+</div>
+<div>
+  <button name="Available">C</button>
+</div>
+
+
+Code: 
+
+@Test
+public void test(){
+
+List<WebElement> list = driver.findElements(By.xpath("//button[@name='Available']"));
+list.stream().forEach(s -> s.click());
+
+}
+
+
+🥈 Exercise 2 — Fetch Input Fields Only When Button = Available
+HTML
+<div>
+ <button name="Available"></button>
+ <input/>
+</div>
+
+
+@Test
+public void test(){
+
+
+
+List<WebElement> list = driver.findElements(By.xpath("//button[@name='Available']/input"));
+list.stream().forEach(s -> s.click());
+
+}
+
+
+Exercise 3 — Find Price of Product “MacBook”
+<h3>MacBook</h3>
+<span class="price">$2000</span>
+
+
+Answer: - //h3[text()='Macbook']/following-sibling::span
+
+
+Exercise 4 — Click Enabled Buttons Only
+<button disabled>Save</button>
+<button>Submit</button>
+
+Answer: - driver.findElements(By.tagname("button")).stream().filter(s->s.isEnabled()).forEach(s -> s.click());
+
+
+
+Exercise 5 — Enter Text Only Into Required Inputs
+<input required>
+<input>
+<input required>
+
+Answer: - driver.findElements(By.cssSelector("input[required]")).stream().forEach(WebElement::sendKeys);
+
+
+
+Exercise 6 — Select Row With Status Failed
+
+<tr>
+<td>123</td>
+<td>Failed</td>
+</tr>
+
+Answer - driver.findElements(By.xPath("//tr/td")).stream().filter(s -> s.getText()).forEach(WebElement::getText);
+
+
+Exercise 7 — Capture Screenshot on Failure
+✅ Code
+File src = ((TakesScreenshot)driver)
+           .getScreenshotAs(OutputType.FILE);
+FileUtils.copyFile(src, new File("fail.png"));
+
+
+Exercise 8 — Explicit Wait Before Click
+✅ Code
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+
+
+Exercise 11 — API Login → Inject Cookie → UI
+driver.manage().addCookie(new Cookie("token", token));
+driver.navigate().refresh();
+
+
+
+Exercise 14 — Wait for JS Page Load
+wait.until(d ->
+((JavascriptExecutor)d)
+.executeScript("return document.readyState")
+.equals("complete"));
+
+
+Exercise 13 — Dynamic Dropdown Selection
+driver.findElements(By.cssSelector(".option"))
+      .stream()
+      .filter(e -> e.getText().equals("India"))
+      .findFirst()
+      .get()
+      .click();
+	  
+
+
+🥇 Challenge 1 — Click All Visible Buttons
+
+driver.findElements(By.xpath("//button")).stream().filter(WebElement::isVisible).forEach(WebElement::click);
+
+
+🥈 Challenge 2 — Find First “Available” Button
+
+driver.findElements(By.xpath("")).stream().filter(e -> "Available".equals(e.getArritbute("name"))).findFirst();
+
+
+🥉 Challenge 3 — Extract Prices Into List
+<span class="price">$10</span>
+
+List<Integer> = driver.findElements(By.xpath("//span[@class = 'price']")).stream().map(s -> s.getText()).map(x ->x.replace("$",""))
+.map(Integer::parseInt)
+.collect(Collectors.tolist());	  
+
+
+<div>
+  <button name="Available">A</button>
+</div>
+<div>
+  <button name="Not Available">B</button>
+</div>
+<div>
+  <button name="Available">C</button>
+</div>
+
+
+Challenge 4 — Get Input Fields Where Button = Available
+
+List<WebElement> inputs =
+driver.findElements(By.tagName("div"))
+      .stream()
+      .filter(div -> div.findElement(By.tagName("button"))
+                        .getAttribute("name")
+                        .equals("Available"))
+      .map(div -> div.findElement(By.tagName("input")))
+      .toList();
+	  
+	  
+	  
+
+
+	  	  
+
+
+
+

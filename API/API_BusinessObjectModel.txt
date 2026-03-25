@@ -1,0 +1,173 @@
+What Is Business Object Model (BOM) in API Testing?
+
+Business Object Model =
+Represent API requests and responses as domain/business objects, not raw JSON strings.
+
+Why BOM?
+
+✔ Readable tests
+✔ Reusable request builders
+✔ Type-safe response parsing
+✔ Easy API chaining
+✔ Clean separation of concerns
+
+🏗️ Example Use Case (Quantifind-style API)
+
+API: Get Entity Risk Profile
+
+GET /quantifind/v1/entities/{entityId}
+
+1️⃣ Define Business Request Object
+🔹 EntityRiskRequest.java
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class EntityRiskRequest {
+    private String entityId;
+    private String entityType;
+    private boolean includeHistory;
+}
+
+
+✔ This represents business intent, not HTTP mechanics.
+
+2️⃣ Define Business Response Object
+🔹 EntityRiskResponse.java
+import lombok.Data;
+
+@Data
+public class EntityRiskResponse {
+    private String requestId;
+    private String status;
+    private Entity entity;
+}
+
+@Data
+public class Entity {
+    private String entityId;
+    private String entityType;
+    private String name;
+    private RiskProfile riskProfile;
+}
+
+@Data
+public class RiskProfile {
+    private int overallRiskScore;
+    private String riskLevel;
+}
+
+3️⃣ API Client Layer (HTTP abstraction)
+🔹 QuantifindApiClient.java
+import static io.restassured.RestAssured.given;
+
+public class QuantifindApiClient {
+
+    private final String baseUrl;
+
+    public QuantifindApiClient(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    public EntityRiskResponse getEntityRisk(EntityRiskRequest request) {
+
+        return given()
+                .baseUri(baseUrl)
+                .queryParam("includeHistory", request.isIncludeHistory())
+        .when()
+                .get("/quantifind/v1/entities/{id}", request.getEntityId())
+        .then()
+                .statusCode(200)
+                .extract()
+                .as(EntityRiskResponse.class);   // 🔥 JSON → Business Object
+    }
+}
+
+
+✔ Raw JSON never leaks into tests
+✔ Jackson handles parsing automatically
+
+4️⃣ Test Using Business Objects (Clean & Expressive)
+🔹 EntityRiskTest.java
+@Test
+public void shouldReturnHighRiskEntity() {
+
+    EntityRiskRequest request =
+            EntityRiskRequest.builder()
+                    .entityId("ENT-458921")
+                    .includeHistory(true)
+                    .build();
+
+    QuantifindApiClient client =
+            new QuantifindApiClient("http://localhost:8080");
+
+    EntityRiskResponse response =
+            client.getEntityRisk(request);
+
+    assertEquals("SUCCESS", response.getStatus());
+    assertEquals("HIGH", response.getEntity().getRiskProfile().getRiskLevel());
+    assertTrue(response.getEntity().getRiskProfile().getOverallRiskScore() > 70);
+}
+
+5️⃣ API Chaining Using Business Objects
+String entityId =
+        response.getEntity().getEntityId();
+
+EntityRiskRequest followUpRequest =
+        EntityRiskRequest.builder()
+                .entityId(entityId)
+                .includeHistory(false)
+                .build();
+
+
+✔ No JSON path
+✔ No string parsing
+✔ Fully type-safe
+
+6️⃣ BOM + WireMock (Perfect Match)
+wiremock.stubFor(get(urlEqualTo("/quantifind/v1/entities/ENT-458921"))
+        .willReturn(okJson(objectMapper.writeValueAsString(
+                EntityRiskResponseMother.highRiskEntity()
+        ))));
+
+
+✔ Same business object used for:
+
+Test data
+
+WireMock stubs
+
+Assertions
+
+7️⃣ BOM + Cucumber ScenarioContext
+scenarioContext.set("ENTITY_RESPONSE", response);
+
+EntityRiskResponse stored =
+        scenarioContext.get("ENTITY_RESPONSE");
+
+
+✔ Clean API chaining across steps
+
+🧠 Architecture Summary (Interview Gold)
+Test Layer
+   ↓
+Business Objects (Request / Response)
+   ↓
+API Client (Rest Assured)
+   ↓
+HTTP Layer
+
+🔥 When This Model Is Used in Real Projects
+
+✔ Backend-only systems
+✔ AI / Risk engines
+✔ Microservices
+✔ Contract testing
+✔ CI-safe API automation
+
+🎯 Interview One-Liner
+
+“We use a Business Object Model to encapsulate API requests and responses, enabling type-safe parsing, reusable request builders, cleaner assertions, and stable API chaining without relying on raw JSON manipulation.”
+
+

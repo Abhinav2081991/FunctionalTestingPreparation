@@ -1,0 +1,151 @@
+Official WireMock Constants (that you should actually use)
+
+These come from:
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+1️⃣ Scenario-related constants (MOST IMPORTANT)
+🔹 STARTED ✅
+public static final String STARTED = "Started";
+
+
+Use case
+
+.whenScenarioStateIs(STARTED)
+
+
+⚠️ Never hardcode "STARTED" — this is the #1 WireMock scenario bug.
+
+2️⃣ URL matching constants
+🔹 ANY
+public static final String ANY = "ANY";
+
+
+Use case
+
+any(anyUrl())
+
+
+Rarely used directly, but exists internally.
+
+3️⃣ HTTP Method helpers (not constants, but static builders)
+
+These are static methods, not constants — but commonly mistaken as constants:
+
+get(urlEqualTo("/path"))
+post(urlEqualTo("/path"))
+put(urlEqualTo("/path"))
+delete(urlEqualTo("/path"))
+patch(urlEqualTo("/path"))
+head(urlEqualTo("/path"))
+options(urlEqualTo("/path"))
+any(urlEqualTo("/path"))
+
+
+⚠️ These are factory methods, not string constants.
+
+4️⃣ URL pattern helpers
+
+Again — methods, not constants, but heavily used:
+
+urlEqualTo("/api/orders")
+urlMatching("/api/.*")
+urlPathEqualTo("/api/orders")
+urlPathMatching("/api/.*")
+anyUrl()
+
+5️⃣ Request body matchers
+equalTo("value")
+containing("text")
+matching("regex")
+equalToJson("{ }")
+equalToXml("<xml/>")
+absent()
+
+6️⃣ Header & query matchers
+withHeader("Content-Type", equalTo("application/json"))
+withQueryParam("id", equalTo("123"))
+withCookie("session", equalTo("abc"))
+
+7️⃣ Response definition helpers
+aResponse()
+withStatus(200)
+withStatusMessage("OK")
+withBody("text")
+withHeader("Header-Name", "value")
+withFixedDelay(2000)
+withChunkedDribbleDelay(5, 1000)
+withFault(Fault.CONNECTION_RESET_BY_PEER)
+
+8️⃣ Fault constants (VERY useful)
+
+From:
+
+import com.github.tomakehurst.wiremock.http.Fault;
+
+🔹 Fault enum
+Fault.EMPTY_RESPONSE
+Fault.MALFORMED_RESPONSE_CHUNK
+Fault.RANDOM_DATA_THEN_CLOSE
+Fault.CONNECTION_RESET_BY_PEER
+
+
+Used to simulate network failures.
+
+9️⃣ Verification helpers
+verify(3, getRequestedFor(urlEqualTo("/api/orders")));
+verify(postRequestedFor(anyUrl()));
+
+❌ What WireMock does NOT provide (Important!)
+
+WireMock does NOT have constants for:
+
+❌ "SECOND"
+❌ "THIRD"
+❌ "LIMIT_EXCEEDED"
+❌ Custom scenario names
+❌ Rate-limit counters
+
+These are user-defined strings — you must manage them yourself.
+
+✅ Best Practice for Scenario States (Senior-level)
+
+Define your own constants:
+
+private static final String SCENARIO = "Rate Limit Test";
+private static final String SECOND = "SECOND";
+private static final String THIRD = "THIRD";
+private static final String LIMIT_EXCEEDED = "LIMIT_EXCEEDED";
+
+
+Then:
+
+.whenScenarioStateIs(STARTED)
+.willSetStateTo(SECOND)
+
+🧠 Interview-Ready Summary
+
+✔ Only one official scenario constant → STARTED
+✔ It equals "Started" (case-sensitive)
+✔ Everything else is custom-defined
+✔ Always static-import WireMock constants
+✔ 404 almost always means no stub matched
+
+🔥 Final Tip (Pro move)
+
+If you ever suspect mismatch:
+
+wireMockServer.getStubMappings().forEach(System.out::println);
+
+
+This instantly shows you what WireMock thinks is registered.
+
+If you want next:
+
+Full WireMock cheat sheet
+
+Common WireMock interview traps
+
+Debug unmatched stubs like a pro
+
+Real-world API Gateway simulation

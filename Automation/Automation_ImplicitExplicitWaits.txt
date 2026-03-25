@@ -1,0 +1,162 @@
+Short Answer
+
+When implicit and explicit waits are combined, Selenium can wait much longer than you expect due to compounded polling delays.
+
+It doesn’t “merge intelligently.”
+It multiplies behavior.
+
+🔎 What Happens Internally
+
+Assume:
+
+driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login")));
+Step-by-step Execution
+
+WebDriverWait starts a 15-second timer.
+
+It polls every ~500 ms.
+
+On each poll, it calls:
+
+driver.findElement(locator)
+
+BUT findElement() now has a 10-second implicit wait.
+
+So every poll can wait up to 10 seconds before failing.
+
+⚠️ What This Means
+
+Instead of:
+
+Max wait = 15 seconds
+
+You can get:
+
+15 seconds + (10 seconds * number_of_polls)
+
+In worst cases → 40–60+ seconds.
+
+This is why people say:
+
+❌ “Explicit wait is not respecting timeout.”
+
+It actually is — but implicit wait is blocking every poll.
+
+🧠 Technical Root Cause
+
+Explicit wait = polling wrapper
+
+Implicit wait = delay inside findElement()
+
+Explicit wait relies on findElement()
+
+Therefore implicit wait gets executed repeatedly
+
+They stack.
+
+🚨 Special Case: When Using WebElement
+
+Now consider this:
+
+WebElement element = driver.findElement(By.id("login"));
+wait.until(ExpectedConditions.visibilityOf(element));
+
+If the element is not present:
+
+The findElement() already waited 10 seconds
+Then explicit wait starts
+Now visibility check polls again
+If element becomes stale → more issues
+
+This can cause:
+StaleElementReferenceException
+Long hangs
+Confusing timeouts
+
+🎯 Real-World Grid Impact
+
+In Selenium Grid (which you’ve worked with):
+
+Each poll = remote HTTP call.
+
+So mixing waits causes:
+
+Extra network traffic
+Node thread blocking
+Reduced parallel capacity
+Slower pipelines
+
+📊 Timeline Visualization
+
+Implicit = 10s
+Explicit = 15s
+Polling = 0.5s
+
+Worst case scenario:
+
+Poll 1 → waits 10s
+Poll 2 → waits 10s
+Poll 3 → waits 10s
+...
+
+Even though explicit says 15s, implicit keeps blocking.
+
+✅ Best Practice (Enterprise Framework Level)
+✔ Always set implicit wait to 0
+driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+✔ Use only explicit (or FluentWait)
+
+Wrap all interactions:
+
+public WebElement waitForVisible(By locator) {
+    return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+}
+🔥 Advanced Design Pattern (What I Recommend for Frameworks)
+
+Create a centralized Wait Utility:
+
+public class WaitManager {
+
+    private WebDriverWait wait;
+
+    public WaitManager(WebDriver driver, int timeout) {
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
+    }
+
+    public WebElement waitForClickable(By locator) {
+        return wait.until(ExpectedConditions.elementToBeClickable(locator));
+    }
+}
+
+Avoid mixing waits anywhere in framework.
+
+🧩 Why Selenium Didn’t Prevent This?
+
+Because:
+
+Implicit wait is driver-level config
+
+Explicit wait is a wrapper class
+
+Selenium does not disable implicit internally when explicit runs
+
+It’s by design.
+
+🏁 Final Verdict
+
+Combining implicit + explicit wait:
+
+Effect					Result
+Performance				Slower
+Debugging				Confusing
+Grid Stability			Worse
+Flakiness				Higher
+🚀 Clean Rule for Mature Automation Suites
+
+❗Implicit wait = ZERO
+❗Explicit/Fluent wait = Controlled & centralized
+❗Never mix

@@ -1,0 +1,140 @@
+Typical DELETE API Contract
+DELETE /users/{id}
+
+Headers:
+Authorization: Bearer <token>
+
+Responses:
+200 → Deleted successfully (with body)
+204 → Deleted successfully (no body)
+401 → Unauthorized
+404 → Not found
+
+🔹 2️⃣ WireMock – DELETE Stub (Success – 204 No Content)
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+public static void stubDeleteUserSuccess() {
+
+    stubFor(delete(urlPathMatching("/users/\\d+"))
+        .withHeader("Authorization", equalTo("Bearer valid-token"))
+        .willReturn(aResponse()
+            .withStatus(204)
+        )
+    );
+}
+
+
+✔ REST-correct
+✔ Idempotent delete
+✔ Most common real API behavior
+
+🔹 3️⃣ WireMock – DELETE with Response Body (200 OK)
+
+Some APIs return confirmation:
+
+public static void stubDeleteUserWithBody() {
+
+    stubFor(delete(urlEqualTo("/users/123"))
+        .withHeader("Authorization", equalTo("Bearer valid-token"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+                "{\n" +
+                "  \"id\": 123,\n" +
+                "  \"status\": \"DELETED\"\n" +
+                "}"
+            )
+        )
+    );
+}
+
+🔹 4️⃣ WireMock – Unauthorized DELETE (401)
+public static void stubDeleteUserUnauthorized() {
+
+    stubFor(delete(urlPathMatching("/users/\\d+"))
+        .withHeader("Authorization", absent())
+        .willReturn(aResponse()
+            .withStatus(401)
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\":\"Unauthorized\"}")
+        )
+    );
+}
+
+🔹 5️⃣ WireMock – User Not Found (404)
+public static void stubDeleteUserNotFound() {
+
+    stubFor(delete(urlEqualTo("/users/999"))
+        .withHeader("Authorization", equalTo("Bearer valid-token"))
+        .willReturn(aResponse()
+            .withStatus(404)
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\":\"User not found\"}")
+        )
+    );
+}
+
+🔹 6️⃣ WireMock – Scenario-based DELETE (Idempotency)
+
+Second delete returns 404 (realistic behavior).
+
+stubFor(delete(urlEqualTo("/users/123"))
+    .inScenario("Delete User Flow")
+    .whenScenarioStateIs(STARTED)
+    .willReturn(aResponse().withStatus(204))
+    .willSetStateTo("DELETED")
+);
+
+stubFor(delete(urlEqualTo("/users/123"))
+    .inScenario("Delete User Flow")
+    .whenScenarioStateIs("DELETED")
+    .willReturn(aResponse()
+        .withStatus(404)
+        .withBody("{\"error\":\"Already deleted\"}")
+    )
+);
+
+
+🔥 This is gold-standard contract testing
+
+🔹 7️⃣ Rest Assured DELETE Test
+RestAssured
+    .given()
+        .baseUri("http://localhost:7776")
+        .header("Authorization", "Bearer valid-token")
+    .when()
+        .delete("/users/123")
+    .then()
+        .statusCode(anyOf(is(200), is(204)));
+
+🔹 8️⃣ DELETE + JSON Schema Validation (If Body Exists)
+Schema (delete_user_response.schema.json)
+{
+  "type": "object",
+  "required": ["id", "status"],
+  "properties": {
+    "id": { "type": "integer" },
+    "status": { "type": "string" }
+  }
+}
+
+Test
+.then()
+    .statusCode(200)
+    .body(matchesJsonSchemaInClasspath(
+        "schemas/delete_user_response.schema.json"
+    ));
+
+🧠 Interview-Ready Explanation
+
+“WireMock allows us to simulate DELETE operations including authorization, idempotency, and negative scenarios. Combined with Rest Assured and JSON Schema validation, this ensures full consumer-side contract testing.”
+
+✅ Best Practices for DELETE in WireMock
+
+	✔ Prefer 204 No Content
+	✔ Validate headers (auth)
+	✔ Use scenario states
+	✔ Avoid request body
+	✔ Validate idempotency
+	✔ Add negative paths

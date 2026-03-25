@@ -1,0 +1,5 @@
+Fetch nth largest value from a column  - 
+
+select col1 from Table t1 where n-1 = (select count(distinct col1) from table t2 where t2.col1 > t1.col1 )
+
+Ex -  select ANNL_EQTY_TRD_QT from cust t1 where 3 = (select count(distinct ANNL_EQTY_TRD_QT) from cust t2 where t2.ANNL_EQTY_TRD_QT > t1.ANNL_EQTY_TRD_QT );

@@ -1,0 +1,407 @@
+POJO + Lombok Optimization (Cucumber + Java)
+1️⃣ Why Lombok in Automation Frameworks?
+
+Without Lombok ❌
+
+Boilerplate getters/setters
+Constructors
+Equals / HashCode
+
+With Lombok ✅
+✔ Cleaner POJOs
+✔ Less code
+✔ Faster development
+✔ More readable step definitions
+
+2️⃣ Add Lombok Dependency
+Maven
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
+    <scope>provided</scope>
+</dependency>
+
+
+📌 Also enable Annotation Processing in IDE.
+
+3️⃣ Lombok-Optimized POJOs (Nested JSON)
+Address POJO
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Address {
+    private String city;
+    private String zip;
+    private String country;
+}
+
+User POJO
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+    private String name;
+    private String role;
+    private Address address;
+}
+
+Request Wrapper
+import lombok.*;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class UserRequest {
+    private List<User> users;
+}
+
+
+✔ Getters/Setters auto-generated
+✔ Clean code
+✔ Immutable option available
+
+4️⃣ Feature File (Multiple Rows DataTable)
+Scenario: Create multiple users with Lombok
+  Given user provides multiple user details
+    | name | role  | city   | zip   | country |
+    | John | Admin | London | 12345 | UK      |
+    | Mike | User  | Berlin | 54321 | Germany |
+
+5️⃣ Step Definition – Lombok + Builder Pattern
+@Given("user provides multiple user details")
+public void user_provides_multiple_user_details(DataTable dataTable) {
+
+    List<Map<String, String>> rows = dataTable.asMaps();
+
+    List<User> users = rows.stream()
+            .map(row -> User.builder()
+                    .name(row.get("name"))
+                    .role(row.get("role"))
+                    .address(Address.builder()
+                            .city(row.get("city"))
+                            .zip(row.get("zip"))
+                            .country(row.get("country"))
+                            .build())
+                    .build())
+            .toList();
+
+    UserRequest request = UserRequest.builder()
+            .users(users)
+            .build();
+
+    response = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .post("/users/bulk");
+}
+
+
+🔥 This is interview GOLD
+
+6️⃣ Generated JSON (Automatically)
+{
+  "users": [
+    {
+      "name": "John",
+      "role": "Admin",
+      "address": {
+        "city": "London",
+        "zip": "12345",
+        "country": "UK"
+      }
+    },
+    {
+      "name": "Mike",
+      "role": "User",
+      "address": {
+        "city": "Berlin",
+        "zip": "54321",
+        "country": "Germany"
+      }
+    }
+  ]
+}
+
+7️⃣ Why Builder Pattern is Preferred (Interview Trap)
+
+❌ Constructors break when fields increase
+❌ Setters allow invalid states
+
+✔ Builder:
+
+Readable
+Order-independent
+Safe for optional fields
+Perfect for JSON payloads
+
+8️⃣ Advanced Lombok Options (Lead Level)
+Immutable POJO
+@Value
+@Builder
+public class User {
+    String name;
+    String role;
+    Address address;
+}
+
+
+✔ Thread-safe
+✔ Ideal for parallel execution
+
+Exclude Fields from JSON
+@JsonIgnore
+private String internalId;
+
+Default Values
+@Builder.Default
+private String role = "User";
+
+9️⃣ Common Lombok Pitfalls
+
+❌ Forgetting no-args constructor (Cucumber needs it sometimes)
+❌ IDE annotation processing disabled
+❌ Using @Data for entities needing immutability
+
+🔟 Interview One-Liner
+
+We use Lombok with builder-based POJOs to eliminate boilerplate code and cleanly map Cucumber DataTables into nested JSON payloads for RestAssured APIs.
+
+🔥 Lead-Level Closing Statement
+
+Lombok combined with the builder pattern gives us clean, immutable, and scalable POJO models that work seamlessly across UI and API automation while supporting complex nested payloads.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Lombok Annotations – Significance & Sequence
+1️⃣ @Data
+🔹 What it Does
+
+Generates all of the following automatically:
+
+Getters for all fields
+Setters for non-final fields
+toString()
+equals() & hashCode()
+
+RequiredArgsConstructor
+
+@Data
+public class User {
+    private String name;
+    private String role;
+}
+
+🔹 When to Use
+
+✔ DTOs / POJOs
+✔ API payload objects
+✔ Cucumber DataTable mapping
+
+⚠️ Caution
+
+Not recommended for entities or immutable objects
+
+Generates setters → mutable state
+
+2️⃣ @Getter / @Setter
+🔹 What they Do
+
+Generate getters/setters individually.
+
+@Getter
+@Setter
+public class User {
+    private String name;
+}
+
+🔹 When to Use
+
+✔ When you want control
+✔ Avoid full @Data
+
+3️⃣ @NoArgsConstructor
+🔹 What it Does
+
+Creates a no-argument constructor.
+
+@NoArgsConstructor
+public class User {}
+
+🔹 Why Important
+
+✔ Required by:
+
+Cucumber DataTable
+
+Jackson (JSON serialization/deserialization)
+
+Reflection-based frameworks
+
+4️⃣ @AllArgsConstructor
+🔹 What it Does
+
+Creates a constructor with all fields as parameters.
+
+@AllArgsConstructor
+public class User {
+    private String name;
+    private String role;
+}
+
+🔹 When to Use
+
+✔ Manual object creation
+✔ Test data setup
+
+5️⃣ @Builder ⭐ (Most Important)
+🔹 What it Does
+
+Generates Builder pattern.
+
+@Builder
+public class User {
+    private String name;
+    private String role;
+}
+
+🔹 Why We Use It
+
+✔ Clean object creation
+✔ Avoid constructor overloads
+✔ Order-independent
+✔ Perfect for nested JSON
+
+User.builder()
+    .name("John")
+    .role("Admin")
+    .build();
+
+6️⃣ @Value (Immutable Objects)
+🔹 What it Does
+
+Makes class final
+Fields private & final
+No setters
+Generates getters, equals, hashCode, toString
+
+@Value
+@Builder
+public class User {
+    String name;
+    String role;
+}
+
+🔹 When to Use
+
+✔ Thread-safe objects
+✔ Parallel execution
+✔ Read-only data
+
+7️⃣ @EqualsAndHashCode
+🔹 What it Does
+
+Generates equals() and hashCode().
+
+@EqualsAndHashCode
+public class User {}
+
+
+✔ Useful for collections & comparisons
+
+8️⃣ @ToString
+🔹 What it Does
+
+Generates toString().
+
+@ToString
+public class User {}
+
+
+✔ Helpful for logging/debugging
+
+9️⃣ @Builder.Default
+🔹 What it Does
+
+Sets default value when using Builder.
+
+@Builder.Default
+private String role = "User";
+
+
+✔ Without this, builder ignores default values
+
+🔢 Do Lombok Annotations Have to Be in Sequence?
+❌ NO — Order Does NOT Matter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {}
+
+
+⬇️ Same as ⬇️
+
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class User {}
+
+📌 Why?
+
+Lombok is annotation-driven
+
+Java compiler processes them independently
+
+🚨 But There ARE Some Rules (Interview Gold)
+❗ Rule 1: @Builder + Constructors
+
+If you add custom constructors, builder may break
+
+Prefer:
+
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+
+❗ Rule 2: @Value vs @Data
+@Data	@Value
+Mutable	Immutable
+Setters	No setters
+Not thread-safe	Thread-safe
+
+❌ Do NOT use together
+
+❗ Rule 3: Framework Compatibility
+
+Framework				Required
+Cucumber				@NoArgsConstructor
+Jackson					@NoArgsConstructor
+REST APIs				@Builder
+Parallel tests			@Value
+
+
+🧠 Interview One-Liner (Very Strong)
+
+Lombok annotations remove boilerplate code by generating constructors, getters, setters, and builders at compile time. The order of annotations does not matter, but choosing the right combination is critical for framework compatibility and thread safety.
+
+✅ Recommended Combination (Automation Framework)
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {}
+
+
+🔥 Clean
+🔥 Flexible
+🔥 Interview-safe

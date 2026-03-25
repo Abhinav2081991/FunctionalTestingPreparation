@@ -1,0 +1,148 @@
+What is the Test Pyramid in QA?
+📌 Definition
+
+The Test Pyramid is a testing strategy model that guides how many tests to write at each level to achieve fast, reliable, and cost-effective testing.
+
+It was popularized by Mike Cohn.
+
+🧠 Core Idea (in one line)
+
+More fast, low-level tests → fewer slow, brittle end-to-end tests
+
+🔺 Structure of the Test Pyramid
+        UI / E2E Tests
+      -----------------
+        API / Integration
+      ---------------------
+        Unit Tests
+
+1️⃣ Unit Tests (Base of the Pyramid)
+🔹 What they test
+
+Individual functions / methods
+Business logic
+Data transformations
+
+🔹 Characteristics
+
+✔ Very fast (milliseconds)
+✔ Cheap to maintain
+✔ Run on every commit
+✔ Isolated (mock dependencies)
+
+🔹 Examples
+
+Java service methods
+Utility classes
+Validation logic
+
+@Test
+void calculateTax() {
+    assertEquals(18, taxService.calculate(100));
+}
+
+🔹 Typical %
+
+👉 60–70% of total tests
+
+2️⃣ API / Integration Tests (Middle Layer)
+🔹 What they test
+
+Service-to-service interactions
+REST / GraphQL APIs
+Database integration
+Contract validation
+
+🔹 Characteristics
+
+✔ Faster than UI
+✔ More stable than UI
+✔ High business coverage
+✔ Run in CI pipelines
+
+🔹 Examples (REST Assured)
+given()
+  .body(payload)
+.when()
+  .post("/users")
+.then()
+  .statusCode(201);
+
+🔹 Typical %
+
+👉 20–30%
+
+3️⃣ UI / End-to-End Tests (Top)
+🔹 What they test
+
+Full user journeys
+Browser interactions
+UI + API + DB together
+
+🔹 Characteristics
+
+❌ Slow
+❌ Flaky
+❌ Expensive to maintain
+✔ Validates real user behavior
+
+🔹 Examples (Selenium)
+loginPage.login("user", "pass");
+dashboard.verifyWelcome();
+
+🔹 Typical %
+
+👉 5–10%
+
+🚨 Why the Pyramid Shape Matters
+❌ Inverted Pyramid (Common Anti-pattern)
+        Unit
+      --------
+     API
+   ------------
+ UI UI UI UI UI
+
+
+Results in:
+
+Slow pipelines
+
+High flakiness
+
+Low trust in automation
+
+🧠 Why Senior QA Care About Test Pyramid
+Concern	How Pyramid Helps
+CI speed	Fewer UI tests
+Stability	More API/unit tests
+Cost	UI tests are expensive
+Confidence	Faster feedback
+🧩 Test Pyramid in Modern QA (Reality)
+Modified Pyramid (Real-world)
+
+Unit tests → Developers
+API tests → QA + Dev
+UI tests → Critical flows only
+
+🔥 Related Models (You Should Know)
+🧁 Test Trophy (Kent C. Dodds)
+     UI
+   -------
+ Integration
+ -----------  ← most valuable
+ Unit
+
+
+Emphasizes integration tests.
+
+🧪 Test Honeycomb
+
+Non-linear
+
+Observability-focused
+
+Used in microservices
+
+🎯 Interview-Perfect Answer
+
+“The Test Pyramid is a testing strategy that emphasizes writing more unit tests, fewer integration tests, and minimal UI tests to achieve fast, reliable feedback. UI tests validate critical user flows, while most business logic is covered at lower levels.”

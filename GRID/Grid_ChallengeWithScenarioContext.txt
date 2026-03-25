@@ -1,0 +1,245 @@
+The Core Problem
+
+When running in parallel:
+
+Multiple scenarios execute simultaneously
+Each scenario needs its own:
+
+WebDriver
+Test data
+Scenario state
+API responses
+IDs generated in previous steps
+
+If ScenarioContext is:
+
+Static
+Singleton
+Shared object
+
+👉 It will break in Grid.
+
+⚠️ Typical Failure Example
+
+Scenario A stores:
+context.set("ORDER_ID", "123");
+
+Scenario B stores:
+context.set("ORDER_ID", "456");
+
+If context is shared →
+Scenario A later reads "456" ❌
+
+Result:
+
+Wrong validation
+Flaky failure
+Hard to debug
+Grid amplifies this because execution is truly parallel.
+
+✅ Enterprise-Level Solutions
+1️⃣ Use ThreadLocal-Based Scenario Context (Most Common & Stable)
+
+This is the most practical approach.
+
+Why?
+
+Each test runs in a separate thread → ThreadLocal ensures thread isolation.
+
+✅ Implementation Pattern
+Step 1: Create ScenarioContext
+
+	public class ScenarioContext {
+
+		private Map<String, Object> data = new HashMap<>();
+
+		public void set(String key, Object value) {
+			data.put(key, value);
+		}
+
+		public Object get(String key) {
+			return data.get(key);
+		}
+	}
+
+Step 2: Wrap It Inside ThreadLocal
+
+	public class ScenarioContextManager {
+
+		private static ThreadLocal<ScenarioContext> context =
+				ThreadLocal.withInitial(ScenarioContext::new);
+
+		public static ScenarioContext getContext() {
+			return context.get();
+		}
+
+		public static void clear() {
+			context.remove();
+		}
+	}
+Step 3: Clear After Each Scenario
+
+In Cucumber:
+
+		@After
+		public void tearDown() {
+			ScenarioContextManager.clear();
+		}
+Why This Works
+
+	Grid → Parallel Threads
+	ThreadLocal → Each thread gets its own context
+	No cross-contamination.
+
+2️⃣ Use Dependency Injection (Cleaner & Scalable)
+
+If you're using Cucumber:
+
+Use:
+
+PicoContainer (default)
+Spring
+Guice
+Instead of static objects.
+
+	Example: PicoContainer
+	public class TestContext {
+		private ScenarioContext scenarioContext = new ScenarioContext();
+
+		public ScenarioContext getScenarioContext() {
+			return scenarioContext;
+		}
+	}
+
+Then inject in step definitions:
+
+	public class OrderSteps {
+
+		private TestContext testContext;
+
+		public OrderSteps(TestContext context) {
+			this.testContext = context;
+		}
+	}
+
+	# Each scenario gets new object instance.
+	# No static. No ThreadLocal needed.
+
+👉 Cleaner than ThreadLocal for large frameworks.
+
+3️⃣ WebDriver Must Also Be ThreadLocal
+
+Common mistake:
+
+public static WebDriver driver;
+
+❌ Breaks in Grid.
+
+Correct pattern:
+
+private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+
+public static WebDriver getDriver() {
+    return driver.get();
+}
+
+Otherwise:
+
+Scenario A quits driver
+Scenario B fails unexpectedly
+
+4️⃣ Never Store Context in Static Variables
+
+Bad:
+
+public static String orderId;
+This WILL break in parallel Grid execution.
+
+
+5️⃣ Handling Scenario Context Across Multiple Nodes (Grid-Specific Concern)
+
+Important clarification:
+
+👉 Selenium Grid does NOT share memory across nodes.
+
+Each test thread:
+Runs independently
+Has its own JVM context
+So ScenarioContext only needs to be thread-safe — not distributed-safe.
+
+Unless:
+You're running tests across multiple JVM instances (like distributed runners)
+In that case:
+
+Use external store (Redis / DB)
+But usually not required.
+
+6️⃣ Handling Context in API + UI Hybrid Tests
+
+Common enterprise scenario:
+
+Create order via API
+Store ID in ScenarioContext
+Validate in UI
+
+Risk:
+If API runs in one thread and UI in another (async design) → context lost.
+
+Solution:
+
+Ensure API + UI steps run in same scenario thread.
+Or pass data explicitly between layers.
+
+7️⃣ Grid + Retry + ScenarioContext Problem
+
+If retry logic reruns failed scenario:
+ThreadLocal still contains old values unless cleared.
+
+Solution:
+Always call:
+ScenarioContextManager.clear();  --> internally calls scenarioCOntextThreadLoacl.remove()  --> this closes the connection.
+Before retry execution.
+
+8️⃣ Memory Leak Prevention
+
+ThreadLocal can cause memory leak if not removed.
+
+Always:
+
+context.remove();
+
+In:
+
+@After
+@AfterMethod
+finally block
+Especially in long-running CI pipelines.
+
+🧠 Architecture Recommendation (Senior Level)
+
+For large enterprise frameworks:
+
+	Component				Recommendation
+	WebDriver				ThreadLocal
+	ScenarioContext			DI preferred
+	Test Data				Generated per scenario
+	API Response Storage	Per scenario
+	Reporting				Thread-safe ExtentReports
+	Logging					MDC-based logging per thread
+
+
+🔥 Most Stable Architecture in 2026
+
+For parallel execution on Selenium Grid:
+
+	No static state
+	No singleton driver
+	No shared mutable object
+	ThreadLocal driver
+	DI-based context
+	Clear context after execution
+	Immutable test data
+
+🎯 Interview-Ready Summary
+
+When running Selenium Grid in parallel, Scenario Context must be thread-isolated. The safest approach is either ThreadLocal-based context management or dependency injection frameworks like PicoContainer or Spring to ensure each scenario has its own object instance. Static variables must be avoided, and context must be cleared after each scenario to prevent memory leaks and cross-contamination.

@@ -1,0 +1,172 @@
+What are “Main” Design Patterns?
+
+When people say main design patterns, they usually mean two big buckets:
+
+1️⃣ GoF (Gang of Four) Design Patterns
+2️⃣ Dependency Injection / Inversion of Control (IoC) (architectural patterns, not GoF)
+
+They solve different classes of problems.
+
+1️⃣ GoF (Gang of Four) Design Patterns
+📘 Origin
+
+Introduced in 1994
+
+Book: Design Patterns: Elements of Reusable Object-Oriented Software
+
+Authors: Gamma, Helm, Johnson, Vlissides
+
+🎯 Purpose
+
+Solve recurring object-oriented design problems in a reusable way.
+
+They are code-level design solutions.
+
+🧩 GoF Categories (3 Types)
+A️⃣ Creational Patterns
+
+Concern: How objects are created
+
+Pattern	Problem it solves	Automation Example
+Factory	Centralized object creation	DriverFactory
+Singleton	Single shared instance	ConfigLoader
+Builder	Complex object construction	API Request POJO
+Prototype	Clone objects	Test data templates
+Example – Factory (Selenium)
+WebDriver driver = DriverFactory.create("chrome");
+
+B️⃣ Structural Patterns
+
+Concern: How objects are composed
+
+Pattern	Problem it solves	Automation Example
+Decorator	Add behavior dynamically	Retry / Logging
+Adapter	Make incompatible APIs work	Selenium → Custom API
+Proxy	Control access	Lazy driver
+Facade	Simplify complex systems	TestService
+Composite	Tree-like structures	Page components
+Example – Decorator
+new RetryDecorator(
+   new LoggingDecorator(
+      new ClickAction()
+   )
+);
+
+C️⃣ Behavioral Patterns
+
+Concern: How objects interact
+
+Pattern	Problem it solves	Automation Example
+Strategy	Swap behavior at runtime	Browser strategy
+Observer	Event notification	Test listeners
+Command	Encapsulate requests	Test steps
+Template	Algorithm skeleton	Test execution flow
+Chain of Responsibility	Sequential handlers	Validation chain
+Example – Strategy
+DriverStrategy strategy = new ChromeStrategy();
+
+🔑 Key Traits of GoF Patterns
+
+✔ Object-oriented
+✔ Language-agnostic
+✔ Focused on design reuse
+✔ Mostly manual wiring
+
+2️⃣ Dependency Injection (DI) & Inversion of Control (IoC)
+
+⚠️ Not GoF patterns
+
+These are architectural principles/patterns.
+
+🔄 Inversion of Control (IoC)
+📌 Definition
+
+The control of object creation and dependency management is inverted from the application code to a container/framework.
+
+❌ Without IoC
+LoginPage page = new LoginPage(new ChromeDriver());
+
+✅ With IoC
+LoginPage page; // framework injects dependencies
+
+💉 Dependency Injection (DI)
+📌 Definition
+
+Dependencies are provided to a class rather than created by it.
+
+DI is one way to achieve IoC.
+
+🔑 Why DI Matters (Especially in QA)
+Problem	How DI solves
+Tight coupling	Inject abstractions
+Hard to mock	Inject test doubles
+Scattered creation	Centralized wiring
+Parallel execution	Scope control
+🧩 Types of Dependency Injection
+1️⃣ Constructor Injection (BEST)
+public LoginPage(WebDriver driver) {
+    this.driver = driver;
+}
+
+
+✔ Immutable
+✔ Testable
+✔ Clear dependencies
+
+2️⃣ Setter Injection
+public void setDriver(WebDriver driver) {
+    this.driver = driver;
+}
+
+
+⚠ Optional dependencies
+
+3️⃣ Field Injection (NOT recommended)
+@Inject
+WebDriver driver;
+
+
+❌ Hard to test
+❌ Hidden dependencies
+
+🧰 IoC Containers
+Tool	Usage
+Spring	Enterprise apps
+Guice	Lightweight
+PicoContainer	Cucumber
+JUnit Extensions	Modern tests
+Example – Cucumber PicoContainer
+public class LoginSteps {
+
+    private final LoginPage loginPage;
+
+    public LoginSteps(LoginPage loginPage) {
+        this.loginPage = loginPage;
+    }
+}
+
+🆚 GoF vs DI/IoC (Very Important)
+Aspect	GoF	DI / IoC
+Scope	Code-level	Architecture-level
+Purpose	Solve design problems	Manage dependencies
+Manual wiring	Yes	No
+Testability	Helps	MASSIVELY improves
+Automation usage	Heavy	Mandatory
+🔥 How They Work Together (Real Framework)
+IoC Container
+   ↓ injects
+Factory → Strategy → Decorator
+   ↓
+Page Objects
+
+
+IoC orchestrates, GoF solves problems inside.
+
+🎯 Interview-Perfect Explanation
+
+“GoF patterns solve object-oriented design problems like creation, composition, and behavior. Dependency Injection and IoC are architectural approaches that manage how dependencies are provided, enabling loose coupling, testability, and scalability. In automation frameworks, IoC wires GoF patterns together.”
+
+🧠 Senior QA Insight
+
+GoF patterns make your code elegant.
+DI makes your architecture survivable.

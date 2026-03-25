@@ -1,0 +1,147 @@
+10️⃣ Real-World Places LSP Is Used in Selenium
+
+Area				LSP Applied
+WebDriver			Chrome, Firefox, Grid
+Page Objects		Web, Mobile
+Wait Strategy		Explicit, Fluent
+Browser Config		Local, Docker
+Reporting			Extent, Allure
+Auth Handling		Token, OAuth
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+                           ┌──────────────────────────┐
+                           │        TEST LAYER        │
+                           │  (TestNG / Cucumber)    │
+                           └───────────▲─────────────┘
+                                       │
+                                       │ uses
+                                       │
+┌──────────────────────────────────────┴──────────────────────────────────────┐
+│                              PAGE LAYER                                      │
+│                                                                              │
+│  ┌───────────────┐      ┌───────────────┐      ┌───────────────┐             │
+│  │ LoginPage     │      │ HomePage      │      │ CheckoutPage  │             │
+│  │ (Interface)   │      │ (Interface)   │      │ (Interface)   │             │
+│  └───────▲───────┘      └───────▲───────┘      └───────▲───────┘             │
+│          │                      │                      │                     │
+│  ┌───────┴────────┐     ┌───────┴────────┐     ┌───────┴────────┐            │
+│  │ WebLoginPage   │     │ WebHomePage    │     │ WebCheckoutPage│            │
+│  └────────────────┘     └────────────────┘     └────────────────┘            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+                                       │
+                                       │ depends on
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           CORE / DRIVER LAYER                                │
+│                                                                              │
+│  ┌────────────────────┐        ┌────────────────────┐                        │
+│  │ DriverProvider     │        │ WaitStrategy       │                        │
+│  │ (Interface)        │        │ (Interface)        │                        │
+│  └────────▲───────────┘        └────────▲───────────┘                        │
+│           │                             │                                    │
+│  ┌────────┴───────────┐        ┌────────┴───────────┐                        │
+│  │ ChromeDriverProv   │        │ ExplicitWait       │                        │
+│  │ FirefoxDriverProv  │        │ FluentWait         │                        │
+│  │ GridDriverProv     │        └────────────────────┘                        │
+│  └────────────────────┘                                                      │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+                                       │
+                                       │ supports
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         UTILITIES / SERVICES                                 │
+│                                                                              │
+│  ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐          │
+│  │ ScreenshotUtil   │   │ ConfigReader     │   │ TestDataReader   │          │
+│  └──────────────────┘   └──────────────────┘   └──────────────────┘          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+                                       │
+                                       │ logs to
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         REPORTING / LISTENERS                                │
+│                                                                              │
+│  ┌──────────────────┐      ┌──────────────────┐                              │
+│  │ ReportLogger     │      │ TestListener     │                              │
+│  │ (Interface)      │      │ (TestNG/Cuke)    │                              │
+│  └────────▲─────────┘      └──────────────────┘                              │
+│           │                                                                  │
+│  ┌────────┴─────────┐                                                        │
+│  │ ExtentLogger     │                                                        │
+│  │ AllureLogger     │                                                        │
+│  └──────────────────┘                                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+------------------------------------------------------------------------------------------------------
+
+                     ┌───────────────────────────┐
+                     │     FEATURE FILES         │
+                     │   (BDD Scenarios)         │
+                     └────────────▲──────────────┘
+                                  │
+                                  │ mapped to
+                                  │
+┌─────────────────────────────────┴─────────────────────────────────┐
+│                      STEP DEFINITIONS                             │
+│            (Thin Layer – No Selenium Code)                        │
+└────────────▲───────────────────────────────────────▲──────────────┘
+             │                                       │
+             │ calls                                 │ depends on
+             │                                       │
+┌────────────┴────────────┐              ┌───────────┴────────────┐
+│        PAGE LAYER       │              │     SERVICE / FLOW     │
+│   (Interfaces + Impl)   │              │  (Business Actions)    │
+└────────────▲────────────┘              └───────────▲────────────┘
+             │                                       │
+             │ uses                                  │ uses
+             │                                       │
+┌────────────┴────────────┐              ┌───────────┴────────────┐
+│    DRIVER / CORE LAYER  │              │   UTILS / HELPERS      │
+│ (Driver, Wait, Config)  │              │ (Data, Screenshot)     │
+└─────────────────────────┘              └────────────────────────┘
+
+                                  │
+                                  │ reported via
+                                  ▼
+                     ┌───────────────────────────┐
+                     │    LISTENERS / REPORTS    │
+                     │ (Extent / Allure)         │
+                     └───────────────────────────┘
+src/test/java
+│
+├── runners
+│   └── TestRunner.java
+│
+├── stepdefinitions
+│   └── LoginSteps.java
+│
+├── pages
+│   ├── LoginPage.java        (Interface)
+│   └── WebLoginPage.java    (Implementation)
+│
+├── services
+│   └── LoginService.java
+│
+├── core
+│   ├── DriverFactory.java
+│   ├── DriverProvider.java
+│   └── WaitStrategy.java
+│
+├── utils
+│   ├── ConfigReader.java
+│   └── ScreenshotUtil.java
+│
+├── listeners
+│   └── CucumberListener.java
+│
+└── reports
+    └── ExtentManager.java

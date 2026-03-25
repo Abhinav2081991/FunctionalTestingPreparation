@@ -1,0 +1,212 @@
+[11:31 am, 18/01/2026] Tej EPAM Hr: Summary
+The candidate has 12  years of experience in software testing. Based on the technical interview , the candidate demonstrates a solid foundation and hands-on exposure across core test automation areas, however the overall code maturity, depth in advanced concepts, and framework-level ownership are aligned up to L3 expectations rather than L4.
+
+ 
+Strengths
+Demonstrates a good understanding of Core Java, particularly in writing and executing programs using collections such as ArrayList and HashMap.
+Shows practical experience with Java-based test automation, including TestNG and BDD frameworks (Cucumber).
+Comfortable working within Agile methodologies and able to explain testing activities in Agile teams; understanding is good up to L3 level.
+Has hands-on experience in UI automation, including writing dynamic XPath expressions.
+Displays reasonable Exposer on API core concepts and its use
+Communication skills are clear and effective during technical discussions.
+Exposure to BDD and test automation practices is adequate for L3 responsibilities.
+ 
+Areas for Improvement / Gaps Identified
+Code maturity is limited; lacks deeper design-level thinking expected at senior levels (L4).
+Java 8 features (Streams, Lambdas, functional programming) need strengthening for modern automation frameworks.
+Advanced BDD concepts such as extensive use of DataTable, scenario parameterization, and reusability patterns are limited.  -- Done.
+CI/CD exposure exists but is limited; implementation-level understanding and ownership are suitable only up to L3. -- Done.
+Testing process knowledge such as Test Strategy, Test Plan, and end-to-end quality ownership needs improvement.
+Advanced API testing concepts (Mocking, complex validations, integration strategies) require deeper hands-on experience. -- Done.
+Limited exposure to Agile process , estimation approaches , RCA part -- Done.
+Code management , practical use of design patterns in framework -- Done.
+ 
+Recommendation
+Based on the discussion, the candidate demonstrates good technical fundamentals and experience in Java, TestNG, UI automation, BDD, and API testing. However:
+On visibility on advanced code maturity
+CI/CD, Agile process understanding, and BDD implementation are good but only up to L3 level
+
+
+Recommendation: Suitable for L3 role
+(Not recommended for L4 at this stage)
+Red flag comment
+No
+Suggestions for a candidate
+
+
+[11:31 am, 18/01/2026] Tej EPAM Hr: utomated Testing in Java
+Based on the discussion, the candidate demonstrates good technical fundamentals and practical experience in Java, TestNG, UI automation, BDD, and API testing. However:
+On visibility on advanced code maturity
+CI/CD, Agile process understanding, and BDD implementation are good but only up to L3 level
+Recommendation: Suitable for L3 role
+(Not recommended for L4 at this stage)
+AI-Generated suggestion based on interview transcript
+
+SKILL FROM: Coding session (AWTP AQA Java)
+Coding Tasks (for AQA Java)
+-Demonstrates a good understanding of Core Java, particularly in writing and executing programs using collections such as ArrayList and HashMap.
+-Displays reasonable Exposer on API core concepts and its use
+-UI found good to L3 level 
+L1, L2, L3, L4
+OOPs
+Java Core
+Automation using Selenium
+Automation of APIs (REST, XML & SOAP)
+AI-Generated suggestion based on interview transcript
+
+SKILLS FROM: AWTP AQA Java
+Java
+-Demonstrates a good understanding of Core Java, particularly in writing and executing programs using collections such as ArrayList and HashMap.
+-Code maturity is limited; lacks deeper design-level thinking expected at senior levels (L4).
+Java 8 features (Streams, Lambdas, functional programming) need strengthening for modern automation frameworks. 
+L1, L2
+OOP principles
+Java collections: base usage (List, Map)
+L3
+Java loops
+Java collections: practical usage of most Collections classes (List, Set, Map)
+Stream API methods, lambda expressions
+Functional interfaces
+L4
+Java collections: implementation and comparing of different Collections classes
+Comparator knowledge
+AI-Generated suggestion based on interview transcript
+Design patterns
+Aware on design patterns but when ask to build logic for problem given found good to L3 level 
+L1, L2
+Purpose of design patterns usage
+At least one of most-common design patterns (e.g Decorator, Singleton, Factory)
+L3
+At least 3 of most-common design patterns (e.g Decorator, Singleton, Factory)
+AI-Generated suggestion based on interview transcript
+Testing Fundamentals
+Found decent with basic core logics on test planning , objectives etc 
+L1, L2
+The definition of Software Testing and Quality
+Test planning, Test monitoring and control, Test analysis, Test design, Test implementation, Test execution, Test completion
+L3
+Test Levels, Test Types
+Objectives of Change-related Testing (Confirmation, Regression)
+AI-Generated suggestion based on interview transcript
+Test strategy
+Aware on test strategy and use but with practical scenario base implementation found good to L3 
+L1, L2
+Content and purpose
+L3
+Can explain how the testing process is organized on the current project, which test approach is applied and why
+L4
+Able to drive changes in the existing Test Strategy (for a small system) or its parts (for a complex system)
+Knows possible risks (which can affect testing on the current project), can assess and prioritize them to prepare mitigation plan
+AI-Generated suggestion based on interview transcript
+Test Plan
+Aware on test plan use and purpose 
+L1, L2
+Understanding of what Test Plan is
+L3
+Aware of Test Plan on a current project, its content, and purpose
+AI-Generated suggestion based on interview transcript
+Web UI Test Automation Tools in Java
+Not able to explain POM vs Factory , With other UI selenium framework design found decent  -- Done.
+L1, L2
+Web UI automation tool (Selenium or any similar tool)
+Elements finding and interaction
+Explicit and Implicit Waits
+PageObject & Page Factory pattern
+L3
+Can create simple tests using the tool
+Dealing with Dynamic Content on a Page
+AI-Generated suggestion based on interview transcript
+Web Service / API Test Automation
+Aware on API core concepts using rest assured aware on basic JSON parsing  , mocking approaches as well 
+L1, L2
+Any API test automation tool (HTTP client, etc)
+Send HTTP request and receive HTTP response (POST, GET, PUT, DELETE)
+Use Business Object model to build a request and to parse a response
+L3
+Serialization, Deserialization, JSON, XML
+L4
+API Mocking
+AI-Generated suggestion based on interview transcript
+Test Automation Framework Architecture
+Framework design side found but on theory and basic core implementation as per L4 maturity found little lack on practical solutions 
+L1, L2
+Use Business Object model to build a request and to parse a response
+Understand the Page Objects concept
+Create the simple page objects
+L3
+Understanding a decomposition of a TAF by a tests layer, business steps layer, page objects layer, core/utils layer  -- Done.
+L4
+Ability to modify existed Page Objects pattern
+Design extended PageObject patterns
+AI-Generated suggestion based on interview transcript
+Test Runners
+Aware on basic test NG listeners and annotations part 
+L1, L2
+Familiar with at least one Java test runner
+Able to connect test runner to the project and write simple tests
+Able to use most popular attributes (RW)
+L3
+Familiar with several Java test runner runners, able co compare them, knows cons and pros  -- Done.
+Able to use all variety of provided attributes to tune up tests (RW)
+AI-Generated suggestion based on interview transcript
+BDD Frameworks
+Aware on data handling and concepts which is good to L3 for L4 on advance concepts found novice -- Done.
+L1, L2
+At least one of: any BDD Framework
+ability to write and maintain executable specification using the Gherkin feature file format
+L3
+Drive the implementation of the application by Gherkin scenarios
+Design and implement a reusable test automation layer ---------------------------------
+L4
+Build solution using BDD tool -- Done
+Running tests in parallel -- Done
+AI-Generated suggestion based on interview transcript
+CI/CD
+Aware on basic job and pipeline creation with implementation CI/CD integration need to explore more -- Done.
+L1, L2
+Understanding what is CI & CD
+Able to review results of CI job
+L3
+Clear differentiation between Continuous Integration, Continuous Delivery & Continuous Deployments terms, conditions when it is needed
+Run static code analysis and tests as part of CI/CD pipeline, gather reports and publish them to dashboard -- Done
+AI-Generated suggestion based on interview transcript
+Logging and reporting
+Aware on log4J implementation  but with advance implementation found novice 
+L1, L2
+Able to connect to the project and use basic reporting features
+Has theoretical knowledge and pros/cons of using custom reporting
+L4
+Ability to modify code to do changes and customization according to project's needs
+Ability to customize storage options for logs and screens
+AI-Generated suggestion based on interview transcript
+Code Quality
+Aware on theory and basic implementation for code standards 
+L1, L2
+Code Review
+L3
+Static/Dynamic Code Analysis  -- Done.
+Coding Standards  -- Done.
+AI-Generated suggestion based on interview transcript
+VCS
+Aware on git commands and flow but with advance concepts and commands found good to L3 as well  -- Done.
+L1, L2
+experience of usage Git or any other VCS
+flow and basic commands
+AI-Generated suggestion based on interview transcript
+SQL
+Aware on DML queries and basic writing  
+L1, L2
+The SELECT statement (purpose, syntax)
+Set operations (union, union all, intersect, minus)
+L3
+DML constructions: INSERT, UPDATE, DELETE, MERGE, TRUNCATE  - Done.
+AI-Generated suggestion based on interview transcript
+SDLC
+Aware on basic estimation approaches but as per L4 found novice with advance approaches , RCAs   -- Done.
+L1, L2
+Scrum\Kanban: workflow, ceremonies, rules roles
+L3
+planning and estimations
+AI-Generated suggestion based on interview transcript
+Leadership
+Have decent exposer with leadership but with process side like RCA , estimations approaches , agile  -- Done.

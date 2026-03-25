@@ -1,0 +1,82 @@
+Jenkins - 
+
+Manage jenkins -  Nodes -  Add an Agent Node - 
+
+Give below Details - 
+
+a. Agent Name - 
+b. Number of Executors - The maximum number of concurrent builds that Jenkins may perform on this node.
+
+c. Remote root directory  - An agent needs to have a directory dedicated to Jenkins. Specify the path to this directory on the agent. It is best to use an absolute path, such as /var/jenkins or c:\jenkins . This should be a path local to the agent machine. There is no need for this path to be visible from the controller.
+
+d. Labels - for ex - AGENT
+
+e. Usage - Select - Use this node as much as possible.
+
+f. Launch method - Select default value.
+
+g. Availability - Keep this agent online as much as possible.
+
+h. GIve environment variables if required. 
+
+Click on Save.
+
+Now There are ceriain commands that can be executed - 
+
+Run from agent command line: (Unix) 
+
+curl -sO http://localhost:8080/jnlpJars/agent.jar  --> This is to get the agent.jar
+
+java -jar agent.jar -url http://localhost:8080/ -secret 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+
+Run from agent command line: (Windows) 
+curl.exe -sO http://localhost:8080/jnlpJars/agent.jar
+java -jar agent.jar -url http://localhost:8080/ -secret 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+
+
+Or run from agent command line, with the secret stored in a file: (Unix) 
+echo 6eb507bdc7e7a89e890f81a8aec0f3403a897bd76cfc4066440bb6337ecc9caa > secret-file
+curl -sO http://localhost:8080/jnlpJars/agent.jar
+java -jar agent.jar -url http://localhost:8080/ -secret @secret-file -name AgentNode1 -webSocket -workDir "C:\Users\Abhinav\Documents\Personal\AutomationPractice\Jenkins\JenkinsAgent"
+ 
+
+
+
+
+Then Agent Node is up and running, alidate from UI now it can be used on pipelines.
+
+---------------------------------------------------
+
+Assign Memory 
+
+For the Jenkins Controller (Master)
+The method for setting the JVM options for the controller depends on how Jenkins was installed and which service manager it uses (e.g., systemd, init, or a Windows service). 
+Locate the configuration file/method:
+Linux (Systemd): Use systemctl edit jenkins to create an override file and add the Java options.
+Linux (Init/Ubuntu prior to March 2022 releases): Edit the JAVA_ARGS or JAVA_OPTS line in the /etc/default/jenkins file.
+Windows: Modify the jenkins.xml file in your installation directory and add the -Xmx parameter to the <arguments> tag.
+Docker: Use environment variables like JAVA_MAX_HEAP_PARAM or CONTAINER_HEAP_PERCENT when launching the container to control the heap size.
+Add/Modify the JVM options:
+Specify the initial (-Xms) and maximum (-Xmx) heap sizes. Best practice is to set them to the same value to avoid dynamic resizing issues.
+Example: -Xms4g -Xmx4g -XX:+UseG1GC (sets initial and max heap to 4GB and uses the G1 Garbage Collector).
+Restart Jenkins: After saving the changes, restart the Jenkins service for the new settings to take effect. 
+Stack Overflow
+Stack Overflow
+ +5
+ 
+ 
+For a Jenkins Agent Node
+You can configure the JVM options for agents directly within the Jenkins UI or via environment variables if using containers. 
+Navigate to the Node configuration:
+From the Jenkins dashboard, go to Manage Jenkins > Manage Nodes and Clouds.
+Select the specific agent you want to configure and click Configure.
+Add JVM options in the UI:
+In the Node configuration page, find the Launch method section.
+Click the Advanced button.
+Add the desired JVM arguments (e.g., -Xms2g -Xmx2g) in the JVM Options field.
+Save and Relaunch:
+Save the configuration.
+If the agent is already online, you may need to Relaunch agent to apply the new settings. 
+Jenkins
+Jenkins
+ +4

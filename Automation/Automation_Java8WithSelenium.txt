@@ -1,0 +1,152 @@
+Implementing Java 8 Features in Selenium Java (With Examples)
+1️⃣ Lambda Expressions (Most Used)
+🔹 Where used in Selenium?
+
+WebDriverWait
+
+ExpectedConditions
+
+Custom waits
+
+Collections iteration
+
+❌ Before Java 8
+wait.until(new ExpectedCondition<Boolean>() {
+    public Boolean apply(WebDriver driver) {
+        return driver.getTitle().contains("Home");
+    }
+});
+
+✅ Java 8 Way
+wait.until(driver -> driver.getTitle().contains("Home"));
+
+
+✔ Less boilerplate
+✔ Cleaner code
+
+2️⃣ Functional Interfaces (Custom Selenium Utilities)
+Example: Custom Wait Condition
+@FunctionalInterface
+public interface WaitCondition {
+    boolean apply(WebDriver driver);
+}
+
+
+Usage:
+
+wait.until(driver -> driver.findElement(By.id("login")).isDisplayed());
+
+
+👉 Enables reusable, flexible waits.
+
+3️⃣ Streams API (Handling WebElements & Data)
+🔹 Example: Filter Visible Elements
+List<WebElement> visibleButtons =
+    driver.findElements(By.tagName("button"))
+          .stream()
+          .filter(WebElement::isDisplayed)
+          .toList();
+
+
+✔ No loops
+✔ Declarative style
+
+🔹 Example: Find First Matching Element
+WebElement loginBtn =
+    driver.findElements(By.tagName("button"))
+          .stream()
+          .filter(e -> e.getText().equals("Login"))
+          .findFirst()
+          .orElseThrow(() -> new RuntimeException("Login button not found"));
+
+4️⃣ Method References (Cleaner Streams)
+❌ Lambda
+elements.stream().filter(e -> e.isDisplayed());
+
+✅ Method Reference
+elements.stream().filter(WebElement::isDisplayed);
+
+
+✔ Shorter
+✔ More readable
+
+5️⃣ Optional (Avoid NullPointerException)
+❌ Traditional
+WebElement element = driver.findElement(By.id("submit")); // may throw
+
+✅ Java 8 Optional
+Optional<WebElement> element =
+    driver.findElements(By.id("submit")).stream().findFirst();
+
+element.ifPresent(WebElement::click);
+
+
+✔ Null-safe
+✔ Cleaner logic
+
+6️⃣ forEach (Replacing Loops)
+❌ Traditional
+for(WebElement e : elements) {
+    System.out.println(e.getText());
+}
+
+✅ Java 8
+elements.forEach(e -> System.out.println(e.getText()));
+
+
+Or:
+
+elements.forEach(WebElement::getText);
+
+7️⃣ Default Methods (Framework Enhancements)
+Example: WebDriver Utility Interface
+public interface DriverUtils {
+
+    default void click(WebElement element) {
+        element.click();
+    }
+
+    default void type(WebElement element, String text) {
+        element.sendKeys(text);
+    }
+}
+
+
+✔ Add behavior without breaking implementations
+
+8️⃣ Predicate & Function (Reusable Conditions)
+Example: Element Validation
+Predicate<WebElement> isVisible = WebElement::isDisplayed;
+
+elements.stream()
+        .filter(isVisible)
+        .forEach(WebElement::click);
+
+9️⃣ Parallel Streams (⚠️ Use Carefully)
+elements.parallelStream()
+        .filter(WebElement::isDisplayed)
+        .forEach(WebElement::click);
+
+
+⚠️ Selenium WebDriver is NOT thread-safe
+👉 Use only for data processing, not browser actions
+
+🔟 Date & Time API (Test Data, Logs)
+String timestamp = LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+
+✔ Better than Date / Calendar
+✔ Thread-safe
+
+🧠 Interview-Ready Summary
+
+“Java 8 features like lambda expressions, streams, method references, Optional, and functional interfaces simplify Selenium automation by reducing boilerplate, improving readability, and enabling more flexible wait conditions, element handling, and test utilities.”
+
+🔥 Best Practices for Selenium + Java 8
+
+✔ Use lambdas for waits
+✔ Streams for element filtering
+✔ Optional for null safety
+✔ Avoid parallel streams with WebDriver
+✔ Keep browser actions single-threaded

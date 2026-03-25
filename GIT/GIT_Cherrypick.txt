@@ -1,0 +1,183 @@
+What is git cherry-pick?
+
+Cherry-pick = apply a specific commit (or commits) from one branch onto another branch.
+
+👉 Instead of merging the whole branch, you “pick” only the commits you want.
+
+Think of it as:
+
+“I want that fix — not everything else.”
+
+🧠 When to use Cherry-pick
+
+✔ Hotfix from develop → release
+✔ Bug fix from feature branch → main
+✔ Backporting fixes
+✔ Selective commit movement
+
+❌ Not good for long-running branches
+❌ Not good as a merge replacement
+
+🔑 Step-by-Step Cherry-pick Process
+🧩 Scenario
+
+Commit exists in feature/login-fix
+
+You want it in release/1.0
+
+Step 1️⃣ Identify the commit
+
+git log
+
+or
+
+git log --oneline
+
+
+Example:
+
+a1b2c3d Fix null pointer in login
+
+
+👉 Copy the commit hash (a1b2c3d)
+
+Step 2️⃣ Switch to target branch
+
+git checkout release/1.0
+
+(or)
+
+git switch release/1.0
+
+
+⚠️ Cherry-pick ALWAYS applies to the current branch
+
+Step 3️⃣ Cherry-pick the commit
+
+git cherry-pick a1b2c3d
+
+✔ Git creates a new commit
+✔ Same code changes
+✔ Different commit hash
+
+Step 4️⃣ Resolve conflicts (if any)
+
+If conflicts happen:
+
+git status
+
+
+Fix conflicts manually, then:
+
+git add .
+
+git cherry-pick --continue
+
+
+Step 5️⃣ Push the changes
+
+git push origin release/1.0
+
+🧪 Cherry-picking Multiple Commits
+
+👉 Pick multiple commits in order
+
+git cherry-pick a1b2c3d e4f5g6h
+
+👉 Pick a range of commits
+
+git cherry-pick a1b2c3d^..e4f5g6h
+
+
+(^ includes the first commit)
+
+⛔ Abort or Skip Cherry-pick
+❌ Abort completely
+
+git cherry-pick --abort
+
+⏭ Skip current commit
+
+git cherry-pick --skip
+
+🍒 Cherry-pick vs Merge vs Rebase
+Operation				What it does
+Cherry-pick				Copies specific commits
+Merge					Combines full branch
+Rebase					Rewrites commit history
+
+
+⚠️ Common Pitfalls (VERY IMPORTANT)
+
+❌ Duplicate commits
+
+If you cherry-pick and later merge the same branch → duplicate history
+
+❌ Breaks commit ancestry
+
+Cherry-picked commit is NOT linked to original branch
+
+❌ Order matters
+
+Cherry-pick commits in the same order they were created
+
+✅ Best Practices (Senior-Level)
+✔ 1. Cherry-pick ONLY small, focused commits
+
+One bug = one commit = perfect cherry-pick
+
+✔ 2. Never cherry-pick merge commits (unless you know why)
+git cherry-pick -m 1 <merge-commit>
+
+
+⚠️ Avoid unless absolutely required
+
+✔ 3. Use -x for traceability
+git cherry-pick -x a1b2c3d
+
+
+Adds:
+
+(cherry picked from commit a1b2c3d)
+
+
+Interviewers LOVE this.
+
+✔ 4. Run tests after cherry-pick
+
+Cherry-pick doesn’t guarantee compatibility.
+
+✔ 5. Avoid cherry-picking across long-lived branches
+
+Prefer merge or rebase.
+
+✔ 6. Communicate with team
+
+Cherry-picks cause confusion if undocumented.
+
+🧠 Real-world Example (Hotfix Flow)
+Bug found in production
+Fix done in develop
+Cherry-pick fix to release
+Deploy
+Later merge develop → main
+
+🎯 Interview-Ready Definition
+
+“Cherry-pick is used to selectively apply one or more commits from one branch to another, without merging the entire branch.”
+
+🧪 Handy Commands Cheat Sheet
+git cherry-pick <commit>
+git cherry-pick <c1> <c2>
+git cherry-pick <c1>^..<c3>
+git cherry-pick --abort
+git cherry-pick --continue
+git cherry-pick -x
+
+🧠 TL;DR
+
+✔ Cherry-pick = selective commit copy
+✔ New commit hash is created
+✔ Useful for hotfixes & backports
+✔ Use sparingly
+✔ Avoid for long-term workflows
